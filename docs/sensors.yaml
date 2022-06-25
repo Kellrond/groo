@@ -14,6 +14,22 @@ Possible sensor list:
   - Water flow meter
   - CO2 / gas 
 
+
+Sensors:
+  - Name: BME688
+    - Functions: gas, temperature, pressure, humidity
+    - Shop: https://www.pishop.ca/product/bme688-4-in-1-air-quality-breakout-gas-temperature-pressure-humidity/
+    - Addresses: 0x76 or 0x77
+    - Dimensions: approx 19mm x 19mm x 5mm (L x W x H, including connector).
+    - Notes: 
+  - Name:    
+     
+  
+  - Name: MICS6814
+    - Functions: CO, NO2, NH3
+    
+
+
 Links:
   - https://tutorials-raspberrypi.com/raspberry-pi-sensors-overview-50-important-components/
   - DHT12 AM2320 Digital Temperature&Humidity Sensor Module Single Bus I2C Replace AM2302
