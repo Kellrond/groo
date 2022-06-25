@@ -1,0 +1,20 @@
+Possible sensor list:
+  - air temperature
+  - atmospheric humidity
+  - soil humidity 
+  - light
+  - wind 
+  - ph / nutrients
+  - electrical usage
+  - soil temp
+  - Magnetic switch for lid
+  - Servo motors
+  - Raindrop sensor
+  - Magnet valave 
+  - Water flow meter
+
+Links:
+  - https://tutorials-raspberrypi.com/raspberry-pi-sensors-overview-50-important-components/
+  - DHT12 AM2320 Digital Temperature&Humidity Sensor Module Single Bus I2C Replace AM2302
+  - https://www.amazon.ca/s?k=DHT12&crid=29Z4OQOVOSLR&sprefix=dht12%2Caps%2C105&ref=nb_sb_noss_1#:~:text=size%20and%20colour.-,DHT12%20AM2320%20Digital%20Temperature%26Humidity%20Sensor%20Module%20Single%20Bus%20I2C%20Replace%20AM2302,-%2411.28
+ 
