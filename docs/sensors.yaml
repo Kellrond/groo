@@ -1,17 +1,18 @@
 Possible sensor list:
-  - air temperature
-  - atmospheric humidity
-  - soil humidity 
-  - light
-  - wind 
-  - ph / nutrients
-  - electrical usage
-  - soil temp
+  - Air temperature
+  - Atmospheric humidity
+  - Soil humidity 
+  - Light
+  - Wind 
+  - Ph / nutrients
+  - Electrical usage
+  - Soil temp
   - Magnetic switch for lid
   - Servo motors
   - Raindrop sensor
   - Magnet valave 
   - Water flow meter
+  - CO2 / gas 
 
 Links:
   - https://tutorials-raspberrypi.com/raspberry-pi-sensors-overview-50-important-components/
