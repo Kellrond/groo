@@ -1,6 +1,5 @@
 from datetime   import datetime
 from flask      import session
-from sqlalchemy import func
 
 from www      import config
 from database import __schema__ as schema, db, nextUniqueId, returnDictFromDboObject

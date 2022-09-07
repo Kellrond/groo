@@ -1,206 +1,216 @@
-from database import db
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String 
+from sqlalchemy.orm import declarative_base
 
+from config import db_config
+from database import Db
+
+Base = declarative_base()
 ## Bulletin board tables
 
-class Bb_categories(db.Model):
+class Bb_categories(Base, Db):
     __tablename__ = 'bb_categories'
 
-    category_id         = db.Column(db.Integer(), primary_key=True)
-    name                = db.Column(db.String())
-    description         = db.Column(db.String())
-    permissions         = db.Column(db.Integer())
-    slug                = db.Column(db.String())
-    parent_category_id  = db.Column(db.Integer())
-    ext_table_name      = db.Column(db.String())
-    active              = db.Column(db.Boolean())
+    category_id         = Column(Integer(), primary_key=True)
+    name                = Column(String())
+    description         = Column(String())
+    permissions         = Column(Integer())
+    slug                = Column(String())
+    parent_category_id  = Column(Integer())
+    ext_table_name      = Column(String())
+    active              = Column(Boolean())
 
 
-class Bb_messages(db.Model):
+class Bb_messages(Base, Db):
     __tablename__ = 'bb_messages'
 
-    post_id             = db.Column(db.Integer(), primary_key=True)
-    parent_post_id      = db.Column(db.Integer())
-    title               = db.Column(db.String())
-    author_id           = db.Column(db.String())
-    post_date           = db.Column(db.DateTime())
-    latest_reply_date   = db.Column(db.DateTime())
-    latest_reply_by     = db.Column(db.String())
-    edit_date           = db.Column(db.DateTime())
-    edited_by           = db.Column(db.String())
-    body                = db.Column(db.String())  
-    ext_ref_id          = db.Column(db.Integer())
-    sticky              = db.Column(db.Boolean())
-    sticky_weight       = db.Column(db.Integer())
-    category_id         = db.Column(db.Integer(), db.ForeignKey('bb_categories.category_id'))
-    active              = db.Column(db.Boolean())
+    post_id             = Column(Integer(), primary_key=True)
+    parent_post_id      = Column(Integer())
+    title               = Column(String())
+    author_id           = Column(String())
+    post_date           = Column(DateTime())
+    latest_reply_date   = Column(DateTime())
+    latest_reply_by     = Column(String())
+    edit_date           = Column(DateTime())
+    edited_by           = Column(String())
+    body                = Column(String())  
+    ext_ref_id          = Column(Integer())
+    sticky              = Column(Boolean())
+    sticky_weight       = Column(Integer())
+    category_id         = Column(Integer(), ForeignKey('bb_categories.category_id'))
+    active              = Column(Boolean())
 
 
-class Bb_subscribe(db.Model):
+class Bb_subscribe(Base, Db):
     __tablename__ = 'bb_subscribe'
 
-    user_id = db.Column(db.String(), primary_key=True)
-    category_id = db.Column(db.Integer(), db.ForeignKey('bb_categories.category_id'), primary_key=True)
+    user_id = Column(String(), primary_key=True)
+    category_id = Column(Integer(), ForeignKey('bb_categories.category_id'), primary_key=True)
 
 
-class Bb_unread_status(db.Model):
+class Bb_unread_status(Base, Db):
     __tablename__ = 'bb_unread_status'
 
-    user_id = db.Column(db.String(), primary_key=True)
-    post_id     = db.Column(db.Integer(), db.ForeignKey('bb_messages.post_id'), primary_key=True)
-    category_id = db.Column(db.Integer(), db.ForeignKey('bb_categories.category_id'), primary_key=True)
+    user_id = Column(String(), primary_key=True)
+    post_id     = Column(Integer(), ForeignKey('bb_messages.post_id'), primary_key=True)
+    category_id = Column(Integer(), ForeignKey('bb_categories.category_id'), primary_key=True)
 
 
 ## Calendar table 
-class Calendar(db.Model):
+class Calendar(Base, Db):
     __tablename__ = 'calendar'
 
-    date_id             = db.Column(db.DateTime(), primary_key=True)
-    date                = db.Column(db.DateTime())
-    yyyy_mm_dd_str      = db.Column(db.String())
-    yyyy_int            = db.Column(db.Integer())
-    yyyy_str            = db.Column(db.String())
-    yy_str              = db.Column(db.String())
-    month               = db.Column(db.String())
-    month_abr           = db.Column(db.String())
-    mm_str              = db.Column(db.String())
-    m_int               = db.Column(db.Integer())
-    dd_str              = db.Column(db.String())
-    d_int               = db.Column(db.Integer())
-    leap                = db.Column(db.String())
-    DoW_int             = db.Column(db.Integer())
-    DoW_abb             = db.Column(db.String())
-    DoW_full            = db.Column(db.String())
-    DoY_int             = db.Column(db.Integer())
-    week_int            = db.Column(db.Integer())
-    fiscal_period       = db.Column(db.Integer())
-    fiscal_yyyy         = db.Column(db.Integer())
-    school_year_period  = db.Column(db.Integer())
-    school_yyyy         = db.Column(db.Integer())
-    school_yyyy_yy      = db.Column(db.String())
-    bc_holiday          = db.Column(db.String())
-    ab_holiday          = db.Column(db.String())
-    sk_holiday          = db.Column(db.String())
-    mb_holiday          = db.Column(db.String())
-    on_holiday          = db.Column(db.String())
-    qc_holiday          = db.Column(db.String())
-    nl_holiday          = db.Column(db.String())
-    nb_holiday          = db.Column(db.String())
-    ns_holiday          = db.Column(db.String())
-    pe_holiday          = db.Column(db.String())
-    us_holiday          = db.Column(db.String()) 
+    date_id             = Column(DateTime(), primary_key=True)
+    date                = Column(DateTime())
+    yyyy_mm_dd_str      = Column(String())
+    yyyy_int            = Column(Integer())
+    yyyy_str            = Column(String())
+    yy_str              = Column(String())
+    month               = Column(String())
+    month_abr           = Column(String())
+    mm_str              = Column(String())
+    m_int               = Column(Integer())
+    dd_str              = Column(String())
+    d_int               = Column(Integer())
+    leap                = Column(String())
+    DoW_int             = Column(Integer())
+    DoW_abb             = Column(String())
+    DoW_full            = Column(String())
+    DoY_int             = Column(Integer())
+    week_int            = Column(Integer())
+    fiscal_period       = Column(Integer())
+    fiscal_yyyy         = Column(Integer())
+    school_year_period  = Column(Integer())
+    school_yyyy         = Column(Integer())
+    school_yyyy_yy      = Column(String())
+    bc_holiday          = Column(String())
+    ab_holiday          = Column(String())
+    sk_holiday          = Column(String())
+    mb_holiday          = Column(String())
+    on_holiday          = Column(String())
+    qc_holiday          = Column(String())
+    nl_holiday          = Column(String())
+    nb_holiday          = Column(String())
+    ns_holiday          = Column(String())
+    pe_holiday          = Column(String())
+    us_holiday          = Column(String()) 
 
 ## Log tables
-class Activity_logs(db.Model):
+class Activity_logs(Base, Db):
     __tablename__ = 'activity_logs'
 
-    activity    = db.Column(db.String()) 
-    args        = db.Column(db.String())
-    user_id     = db.Column(db.String(), primary_key=True)
-    endpoint    = db.Column(db.String()) 
-    error       = db.Column(db.String()) 
-    ip          = db.Column(db.String())
-    level       = db.Column(db.Integer())
-    note        = db.Column(db.String()) 
-    page        = db.Column(db.String())
-    tab         = db.Column(db.String())
-    resource_id = db.Column(db.String())
-    py          = db.Column(db.String()) 
-    timestamp   = db.Column(db.DateTime(), primary_key=True)
+    activity    = Column(String()) 
+    args        = Column(String())
+    user_id     = Column(String(), primary_key=True)
+    endpoint    = Column(String()) 
+    error       = Column(String()) 
+    ip          = Column(String())
+    level       = Column(Integer())
+    note        = Column(String()) 
+    page        = Column(String())
+    tab         = Column(String())
+    resource_id = Column(String())
+    py          = Column(String()) 
+    timestamp   = Column(DateTime(), primary_key=True)
 
 
-class Apache_error(db.Model):
+class Apache_error(Base, Db):
     __tablename__ = 'apache_error'
 
-    error_time  = db.Column(db.DateTime, primary_key=True) 
-    error_type  = db.Column(db.String())
-    pid         = db.Column(db.String(), primary_key=True)
-    ip          = db.Column(db.String()) 
-    port        = db.Column(db.String()) 
-    error       = db.Column(db.String())
+    error_time  = Column(DateTime, primary_key=True) 
+    error_type  = Column(String())
+    pid         = Column(String(), primary_key=True)
+    ip          = Column(String()) 
+    port        = Column(String()) 
+    error       = Column(String())
 
 
-class Apache_access(db.Model):
+class Apache_access(Base, Db):
     __tablename__ = 'apache_access'
 
-    ip          = db.Column(db.String(), primary_key=True) 
-    timestamp   = db.Column(db.DateTime(), primary_key=True) 
-    method      = db.Column(db.String()) 
-    url         = db.Column(db.String(), primary_key=True) 
-    response    = db.Column(db.String()) 
-    size        = db.Column(db.Integer()) 
-    referrer    = db.Column(db.String()) 
-    mozilla     = db.Column(db.String()) 
-    system_info = db.Column(db.String()) 
-    platform    = db.Column(db.String())
-    extensions  = db.Column(db.String())
+    ip          = Column(String(), primary_key=True) 
+    timestamp   = Column(DateTime(), primary_key=True) 
+    method      = Column(String()) 
+    url         = Column(String(), primary_key=True) 
+    response    = Column(String()) 
+    size        = Column(Integer()) 
+    referrer    = Column(String()) 
+    mozilla     = Column(String()) 
+    system_info = Column(String()) 
+    platform    = Column(String())
+    extensions  = Column(String())
 
 ## Site content tables
-class Page_content(db.Model):
+class Page_content(Base, Db):
     __tablename__   = "page_content"
 
-    page_content_id = db.Column(db.Integer(), primary_key=True)
-    user_id         = db.Column(db.String())
-    title           = db.Column(db.String())
-    content         = db.Column(db.String())
-    publish_on      = db.Column(db.DateTime())
-    publish_until   = db.Column(db.DateTime())
-    active          = db.Column(db.Boolean())
-    dc_id           = db.Column(db.Integer())
+    page_content_id = Column(Integer(), primary_key=True)
+    user_id         = Column(String())
+    title           = Column(String())
+    content         = Column(String())
+    publish_on      = Column(DateTime())
+    publish_until   = Column(DateTime())
+    active          = Column(Boolean())
+    dc_id           = Column(Integer())
 
 ## Dev tables used mainly for documentation
-class Doc_classes(db.Model):
+class Doc_classes(Base, Db):
     __tablename__ = 'doc_classes'
 
-    class_id    = db.Column(db.Integer(), primary_key=True)
-    file_id     = db.Column(db.Integer())
-    name        = db.Column(db.String())
-    superclass  = db.Column(db.String())
-    docstring   = db.Column(db.String())
-    parameters  = db.Column(db.String())
+    class_id    = Column(Integer(), primary_key=True)
+    file_id     = Column(Integer())
+    name        = Column(String())
+    superclass  = Column(String())
+    docstring   = Column(String())
+    parameters  = Column(String())
 
-class Doc_dependencies(db.Model):
+class Doc_dependencies(Base, Db):
     __tablename__ = 'doc_dependencies'
 
-    dependency_id = db.Column(db.Integer(), primary_key=True)
-    file_id       = db.Column(db.Integer())
-    module        = db.Column(db.String())
-    object        = db.Column(db.String())
+    dependency_id = Column(Integer(), primary_key=True)
+    file_id       = Column(Integer())
+    module        = Column(String())
+    object        = Column(String())
 
 
-class Doc_functions(db.Model):
+class Doc_functions(Base, Db):
     __tablename__ = 'doc_functions'
 
-    function_id = db.Column(db.Integer(), primary_key=True)
-    class_id    = db.Column(db.Integer())
-    file_id     = db.Column(db.Integer())
-    name        = db.Column(db.String())
-    returns     = db.Column(db.String())
-    docstring   = db.Column(db.String())
-    parameters  = db.Column(db.String())
+    function_id = Column(Integer(), primary_key=True)
+    class_id    = Column(Integer())
+    file_id     = Column(Integer())
+    name        = Column(String())
+    returns     = Column(String())
+    docstring   = Column(String())
+    parameters  = Column(String())
 
-class Doc_folders(db.Model):
+class Doc_folders(Base, Db):
     __tablename__ = 'doc_folders'
 
-    folder_id = db.Column(db.Integer(), primary_key=True)
-    parent_id = db.Column(db.Integer())
-    file_path = db.Column(db.String())
-    name      = db.Column(db.String())
+    folder_id = Column(Integer(), primary_key=True)
+    parent_id = Column(Integer())
+    file_path = Column(String())
+    name      = Column(String())
 
-class Doc_files(db.Model):
+class Doc_files(Base, Db):
     __tablename__ = 'doc_files'
 
-    file_id   = db.Column(db.Integer(), primary_key=True)
-    folder_id = db.Column(db.Integer())
-    name      = db.Column(db.String())
-    file_path = db.Column(db.String())
-    ext       = db.Column(db.String())
-    lines     = db.Column(db.Integer())
+    file_id   = Column(Integer(), primary_key=True)
+    folder_id = Column(Integer())
+    name      = Column(String())
+    file_path = Column(String())
+    ext       = Column(String())
+    lines     = Column(Integer())
 
 
-class Doc_routes(db.Model):
+class Doc_routes(Base, Db):
     __tablename__ = 'doc_routes'
 
-    file_id     = db.Column(db.Integer())
-    methods     = db.Column(db.String())
-    permissions = db.Column(db.String())
-    url         = db.Column(db.String(), primary_key=True)
+    file_id     = Column(Integer())
+    methods     = Column(String())
+    permissions = Column(String())
+    url         = Column(String(), primary_key=True)
+
+
+def buildTables():
+    db = Db(db_config.garden_db_connect)
+    Base.metadata.create_all(db.engine)
