@@ -8,7 +8,7 @@ from    www.views.developer.views   import DeveloperPageView
 from    www.views.developer.widgets import ApacheAccessWidget, ActivityLogWidget, ApacheErrorWidget, ErrorAlertWidget
 from    www.views.developer.widgets import DatabaseControlWidget, DatabaseStatsWidget, SqlResultsWidget, GlogbalConfigWidget
 from    www.views.developer.widgets import DocsRoutesWidget, DocsWidget
-import  docs
+import  documentation
 
 bp = Blueprint('developer', __name__)
 
@@ -72,16 +72,16 @@ def dev_documentation(section):
     if section == 'rebuild':
         docs_db.dropAllDocs()
         
-        doc = docs.Docs()
+        doc = documentation.Docs()
         doc.update_folders_and_files_db()
         
-        routes_doc = docs.RoutesDocs()
+        routes_doc = documentation.RoutesDocs()
         routes_doc.rebuildRoutesDocs()
-        classes_doc = docs.ClassesDocs()
+        classes_doc = documentation.ClassesDocs()
         classes_doc.rebuildClassesDocs()
-        functions_doc = docs.FunctionsDocs()
+        functions_doc = documentation.FunctionsDocs()
         functions_doc.rebuildFunctionsDocs()
-        dependency_docs = docs.DependencyDocs()
+        dependency_docs = documentation.DependencyDocs()
         dependency_docs.rebuilddependencyDocs()
 
         widget = DocsAdminWidget(**kwargs)

@@ -3,7 +3,7 @@ from    flask import request
 from    www.modules import forms
 from    www.modules.widget_builder   import WidgetBuilder
 from    database import docs_db
-from    docs import Docs, parseDocstringToHtml
+from    documentation import Docs, parseDocstringToHtml
 
 
 class DocsAdminWidget(WidgetBuilder):
