@@ -1,31 +1,13 @@
-import psycopg2
 
 import appConfig
 
 
->>> cur = conn.cursor()
-
->>> cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
-
-
->>> cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)",
-  (100, "abc'def"))
-
->>> cur.execute("SELECT * FROM test;")
->>> cur.fetchone()
-(1, 100, "abc'def")
-
-# Make the changes to the database persistent
->>> conn.commit()
-
-# Close communication with the database
->>> cur.close()
->>> conn.close()
-
 class Db:
-    def __init__(self) -> None:
-        self.connection = psycopg2.connect(**appConfig.db.db_connect)
-        self.cursor = self.connection.cursor()
+    def __init__(self, connect_string) -> None:
+        self.__name__ = "garden"
+        self.engine = create_engine(connect_string)
+        self.session = Session(self.engine)
+
 
     def connect(self):
         return self.engine.connect()
@@ -68,4 +50,4 @@ class Db:
         else:
             return None
  
-db = Db()
+db = Db(appConfig.db.garden_connect)

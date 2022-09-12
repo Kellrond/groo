@@ -5,7 +5,7 @@ from database    import _skeleton_db
 from www.modules import forms
 from www.modules.widget_builder import WidgetBuilder
 from www.views._skeletons.forms import ExampleForm
-from environment import _skeletons
+from www.modules import _skeletons
 
 
 class ExampleListWidget(WidgetBuilder):

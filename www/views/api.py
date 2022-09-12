@@ -2,7 +2,7 @@ from    flask   import Blueprint, redirect, request, session, url_for
 
 from    www.modules             import bulletin_board, session_control
 from    database                import __admin__ as db_admin
-from    modules                 import logging
+from    modules                import logging
 
 
 logger = logging.Log(py=__name__)

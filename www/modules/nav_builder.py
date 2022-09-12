@@ -29,15 +29,18 @@ class NavBuilder():
     def __build_nav_items(self) -> None:
         ''' Constructs the nav bar items '''
         return f'''
-            <ul class="navbar-nav mb-0 ms-2 ">      
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">Admin</a>
-                    <ul class="dropdown-menu multi-level">
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{ url_for('bulletin_board.bulletin_board') }">Bulletin board</a></li>
-                        <li><a class="dropdown-item" href="{ url_for('site_admin.site_admin') }">Site admin</a></li>        
-                        <li><a class="dropdown-item" href="{ url_for('developer.developer') }">Developer</a></li>         
-                    </ul>
+            <ul class="navbar-nav mb-0 ms-2 ">    
+                <li class="nav-item">
+                    <a class="nav-link" href="{ url_for('documentation.documentation') }">Documentation</a>
+                </li>  
+                <li class="nav-item">
+                    <a class="nav-link" href="{ url_for('bulletin_board.bulletin_board') }">Bulletin board</a>
+                </li>  
+                <li class="nav-item">
+                    <a class="nav-link" href="{ url_for('site_admin.site_admin') }">Site admin</a>
+                </li>  
+                <li class="nav-item">
+                    <a class="nav-link" href="{ url_for('developer.developer') }">Developer</a>
                 </li>  
             </ul>
             '''

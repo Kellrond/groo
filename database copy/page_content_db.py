@@ -1,7 +1,8 @@
 from datetime    import datetime as dt
 
 from www         import config
-from database    import __schema__ as schema, db, returnDictFromDboObject, nextUniqueId
+from database    import __schema__ as schema
+# , db, returnDictFromDboObject, nextUniqueId
 from modules     import logging 
 
 logger = logging.Log(py=__name__)

@@ -4,7 +4,7 @@ from flask import session, url_for
 from    www.modules import forms
 from    www.modules.widget_builder   import WidgetBuilder
 import  database
-
+from    database import __admin__ as db_admin
 
 
 class DatabaseControlWidget(WidgetBuilder):
@@ -103,7 +103,7 @@ class DatabaseStatsWidget(WidgetBuilder):
         return inner_html
 
     def __get_pagination_dict(self) -> dict:
-        pagination_dict = database.returnDbStatsPagination(page=self.page)
+        pagination_dict = db_admin.returnDbStatsPagination(page=self.page)
         return pagination_dict
 
     def __return_discrepancy_table_html(self, table_stats_list) -> list:

@@ -1,8 +1,8 @@
 import  datetime as dt
 from    flask    import session, request
 
-from    www.config      import logging_level
-from    database.log_db import writeLogToDb
+from    www.config       import logging_level
+from    database.log_db  import writeLogToDb
 from    modules.logging import apache_etl
 
 

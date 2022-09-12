@@ -1,8 +1,6 @@
 from www         import config
-from database    import __schema__ as schema, db, nextUniqueId
-from modules     import logging 
-
-logger = logging.Log(py=__name__)
+from database    import __schema__ as schema
+from database   import db
 
 def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
     page = int(page) - 1 # adjust for pagination offest to start from 1
@@ -270,25 +268,16 @@ def paginateStats() -> dict:
     return {'summary': summary, 'detail': file_list}
 
 def dropAllDocs() -> bool:
-    try:
-        sql = '''DELETE FROM doc_routes WHERE 1=1;'''
-        db.session.execute(sql)
-        sql = '''DELETE FROM doc_functions WHERE 1=1;'''
-        db.session.execute(sql)
-        sql = '''DELETE FROM doc_classes WHERE 1=1;'''
-        db.session.execute(sql)        
-        sql = '''DELETE FROM doc_dependencies WHERE 1=1;'''
-        db.session.execute(sql)
-        sql = '''DELETE FROM doc_folders WHERE 1=1;'''
-        db.session.execute(sql)
-        sql = '''DELETE FROM doc_files WHERE 1=1;'''
-        db.session.execute(sql)
-        logger.write(activity='drop all route docs from DC', resource_id='', note="Success")
-        return True
-    except Exception as e: 
-        db.session.rollback()
-        logger.write(activity='drop all route docs from DC', resource_id='', error=e)
-        return False     
+    # try:
+    tables = ['doc_routes', 'doc_functions', 'doc_classes', 'doc_dependencies', 'doc_folders', 'doc_files']
+    for table in tables:
+        sql = f'DELETE FROM { table } WHERE 1=1;'
+        db.execute(sql)
+    return True
+    # except Exception as e: 
+    #     db.session.rollback()
+    #     logger.write(activity='drop all route docs from DC', resource_id='', error=e)
+    #     return False     
 
 def getDocFolderIdFromFilePath(file_path):
     file_path = file_path.split('/')
@@ -336,7 +325,6 @@ def updateDocRoutesDb(routes) -> bool:
         return True
     except Exception as e:
         db.session.rollback()
-        logger.write(activity='write routes', resource_id='', error=e)
         return False
 
 def updateDocClassesDb(classes) -> bool:
@@ -370,7 +358,6 @@ def updateDocClassesDb(classes) -> bool:
         return True
     except Exception as e:
         db.session.rollback()
-        logger.write(activity='write classes', resource_id='', error=e)
         return False
 
 def updateDocFilesDb(file_paths) -> bool:

@@ -1,14 +1,12 @@
 from    flask       import Blueprint, json, redirect, request, send_file, session
 
 from    www         import config
-from www.views.developer.widgets.documentation import DocsAdminWidget
 from    database    import __admin__ as db_admin, docs_db
 from    www.modules.decorators      import permissions_required
 from    www.views.developer.views   import DeveloperPageView
 from    www.views.developer.widgets import ApacheAccessWidget, ActivityLogWidget, ApacheErrorWidget, ErrorAlertWidget
 from    www.views.developer.widgets import DatabaseControlWidget, DatabaseStatsWidget, SqlResultsWidget, GlogbalConfigWidget
-from    www.views.developer.widgets import DocsRoutesWidget, DocsWidget
-import  documentation
+from    www.views.documentation.widgets import DocsRoutesWidget, DocsWidget
 
 bp = Blueprint('developer', __name__)
 
@@ -64,34 +62,6 @@ def update_config():
     glb_config_widget = GlogbalConfigWidget()
     glb_config_widget.writeConfig(form=request.form.to_dict())
     return redirect(request.referrer)
-
-@bp.route('/widget/documentation/<section>')
-#@permissions_required(config.Permissions.developer)
-def dev_documentation(section):
-    kwargs = request.args.to_dict()
-    if section == 'rebuild':
-        docs_db.dropAllDocs()
-        
-        doc = documentation.Docs()
-        doc.update_folders_and_files_db()
-        
-        routes_doc = documentation.RoutesDocs()
-        routes_doc.rebuildRoutesDocs()
-        classes_doc = documentation.ClassesDocs()
-        classes_doc.rebuildClassesDocs()
-        functions_doc = documentation.FunctionsDocs()
-        functions_doc.rebuildFunctionsDocs()
-        dependency_docs = documentation.DependencyDocs()
-        dependency_docs.rebuilddependencyDocs()
-
-        widget = DocsAdminWidget(**kwargs)
-    elif section == 'routes':
-        widget = DocsRoutesWidget(**kwargs)
-    else:
-        widget = DocsWidget(**kwargs)
-
-    return json.jsonify(widget.html())
-
 
 @bp.route('/widget/logging/<log_type>')
 #@permissions_required(config.Permissions.site_admin)

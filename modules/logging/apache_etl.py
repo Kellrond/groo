@@ -2,7 +2,7 @@ from    datetime        import datetime as dt
 from    glob            import glob
 from    sqlalchemy.dialects.postgresql import insert
 
-from    database        import db
+# from    database        import db
 from    database.__schema__ import Apache_access, Apache_error
 from    www.config      import path
 

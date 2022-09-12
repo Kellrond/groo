@@ -1,1 +1,5 @@
-garden_connect = 'postgresql+psycopg2://garden:garden@localhost/garden'
+db_connect = {
+    'user': 'garden',
+    'password':'garden',
+    'dbname': 'garden' 
+}
