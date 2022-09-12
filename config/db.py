@@ -1,1 +1,0 @@
-garden_db_connect = 'mysql+pymysql://garden:garden@localhost/garden'

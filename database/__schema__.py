@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String 
 from sqlalchemy.orm import declarative_base
 
-from config import db_config
+import appConfig
 from database import Db
 
 Base = declarative_base()
@@ -211,6 +211,6 @@ class Doc_routes(Base, Db):
     url         = Column(String(), primary_key=True)
 
 
-def buildTables():
-    db = Db(db_config.garden_db_connect)
+def buildTables(db: Db):
+    ''' Takes a db object as a parameter so the db must be created already '''
     Base.metadata.create_all(db.engine)

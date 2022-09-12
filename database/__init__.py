@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, func, MetaData
 from sqlalchemy.orm import Session
-from config import db_config
 
 
 class Db:
