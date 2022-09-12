@@ -28,8 +28,9 @@ piUserName="jpk"
 #### Developer options
 # If installing as a development environment please check the following variables
 developerInstall=TRUE
-gitName=""
-gitEmail=""
+desktopInstall=FALSE
+gitName="Jordan Kell"
+gitEmail="kellrond@gmail.com"
 gitCred="store"
 
 # Do not change these variables unless the related login the the code base is changed as well
@@ -44,29 +45,45 @@ echo " == INSTALL =="
 ####
 t_start=$SECONDS
 
-echo " Install packages"                                                                            
+
+#### If installing on Ubuntu 22.04 there is a prompt that needs silencing
+if test -f "/etc/needrestart/needrestart.conf"
+then
+    echo " Silence the 'Daemons using outdated libraries' message"
+    sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g'  /etc/needrestart/needrestart.conf
+fi
+
+echo -n " Install packages"                                                                            
 ####
+sub_start=$SECONDS
+
 apt-get -qq update
 apt-get -qq upgrade
-apt-get -qq -y install apache2 expect git postgresql-13 python3-dev python3-venv ufw
+apt-get -qq -y install apache2 expect git postgresql python3-dev python3-venv ufw > dev/null
 
-if [ $developerInstall = TRUE ] 
+if [ $desktopInstall = TRUE ] 
 then
     echo " Install development packages"                                                                            
     apt -qq -y install code
 fi
+duration=($SECONDS - $sub_start)
+echo ": Completed in $duration seconds"
 
-echo " Clone git repos"
+
+echo -n " Clone git repos"
 ####
+sub_start=$SECONDS
+
 su - $linuxUser <<HERE
-    cd ~
+    cd /home/$piUserName
     git clone --quiet https://github.com/Kellrond/garden_pi.git
     git config --global --add safe.directory /home/$piUserName/$REPO_NAME
 HERE
+duration=($SECONDS - $sub_start)
+echo ": Completed in $duration seconds"
 
 duration=($SECONDS - $t_start)
 echo " Installs and downloads completed in $duration seconds"
-
 
 
 echo " == SETUP =="
@@ -82,11 +99,12 @@ HERE
 
 echo " postgres: Setup to allow remote connections"
 ####
-echo "\n$SQL_USER             $piUserName               postgres" >> /etc/postgresql/13/main/pg_ident.conf
-sed -i "s:#listen_addresses = 'localhost':listen_addresses = '*':g" /etc/postgresql/13/main/postgresql.conf
-echo "host    all             all              0.0.0.0/0                       md5" >> /etc/postgresql/13/main/pg_hba.conf
-echo "host    all             all              ::/0                            md5" >> /etc/postgresql/13/main/pg_hba.conf
-sed -i "s:# Put your actual configuration here:# Put your actual configuration here\nlocal   all             $SQL_USER                                password:g" /etc/postgresql/13/main/pg_hba.conf
+postgres_config_dir=$(find /etc/postgresql -name pg_ident.conf | cut -c1-18)
+echo "\n$SQL_USER             $piUserName               postgres" >> $postgres_config_dir/main/pg_ident.conf
+sed -i "s:#listen_addresses = 'localhost':listen_addresses = '*':g" $postgres_config_dir/main/postgresql.conf
+echo "host    all             all              0.0.0.0/0                       md5" >> $postgres_config_dir/main/pg_hba.conf
+echo "host    all             all              ::/0                            md5" >> $postgres_config_dir/main/pg_hba.conf
+sed -i "s:# Put your actual configuration here:# Put your actual configuration here\nlocal   all             $SQL_USER                                password:g" $postgres_config_dir/main/pg_hba.conf
 
 echo " postgres: Setup user(s)"
 ####
