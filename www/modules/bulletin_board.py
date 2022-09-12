@@ -1,6 +1,6 @@
 from    flask                           import session
 
-from    database                        import db, bulletin_board_db
+from    database                        import bulletin_board_db
 from    database.__schema__             import Bb_categories, Bb_messages, Bb_subscribe, Bb_unread_status
 
 def isMsgRead(post_id: int) -> bool:

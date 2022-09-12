@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, func, MetaData
 from sqlalchemy.orm import Session
 
-
 class Db:
     def __init__(self, connect_string) -> None:
         self.__name__ = "garden"

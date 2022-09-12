@@ -1,4 +1,13 @@
-#! /bin/bash
+#!/bin/bash
+
+clear
+
+if [ "$EUID" -ne 0 ]
+  then 
+  echo "Please run script as root"
+  echo "sudo ./install.sh"
+  exit
+fi
 
 clear
 
@@ -53,34 +62,27 @@ then
     sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g'  /etc/needrestart/needrestart.conf
 fi
 
-echo -n " Install packages"                                                                            
+echo " Install packages"                                                                            
 ####
-sub_start=$SECONDS
 
-apt-get -qq update
-apt-get -qq upgrade
-apt-get -qq -y install apache2 expect git postgresql python3-dev python3-venv ufw > dev/null
+apt-get -qq update > /dev/null
+apt-get -qq upgrade > /dev/null
+apt-get -qq -y install apache2 expect git postgresql python3-dev python3-venv ufw > /dev/null
 
 if [ $desktopInstall = TRUE ] 
 then
     echo " Install development packages"                                                                            
     apt -qq -y install code
 fi
-duration=($SECONDS - $sub_start)
-echo ": Completed in $duration seconds"
 
-
-echo -n " Clone git repos"
+echo " Clone git repos"
 ####
-sub_start=$SECONDS
 
 su - $linuxUser <<HERE
     cd /home/$piUserName
     git clone --quiet https://github.com/Kellrond/garden_pi.git
     git config --global --add safe.directory /home/$piUserName/$REPO_NAME
 HERE
-duration=($SECONDS - $sub_start)
-echo ": Completed in $duration seconds"
 
 duration=($SECONDS - $t_start)
 echo " Installs and downloads completed in $duration seconds"
@@ -109,15 +111,15 @@ sed -i "s:# Put your actual configuration here:# Put your actual configuration h
 echo " postgres: Setup user(s)"
 ####
 su - postgres <<HERE
-    /usr/bin/expect <<EOD
-        spawn createuser $SQL_USER -sdrlP
-        expect "Enter password for new role:"
-        send "$SQL_PASS\n"
-        expect "Enter it again:"
-        send "$SQL_PASS\n"
-        expect eof
-    EOD
-    createdb garden 
+/usr/bin/expect <<EOD
+    spawn createuser $SQL_USER -sdrlP
+    expect "Enter password for new role:"
+    send "$SQL_PASS\n"
+    expect "Enter it again:"
+    send "$SQL_PASS\n"
+    expect eof
+EOD
+createdb garden 
 HERE
 
 echo "python: create virtual environment (venv)"
