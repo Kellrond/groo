@@ -1,5 +1,5 @@
 from www.modules.page_builder    import PageBuilder
-from www.views.home.widgets      import PostWidget
+# from www.views.home.widgets      import PostWidget
 
 
 class HomePageView(PageBuilder):

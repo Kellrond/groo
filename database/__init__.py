@@ -1,71 +1,92 @@
-import psycopg2
+import  psycopg2
 
 import appConfig
 
-
->>> cur = conn.cursor()
-
->>> cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
-
-
->>> cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)",
-  (100, "abc'def"))
-
->>> cur.execute("SELECT * FROM test;")
->>> cur.fetchone()
-(1, 100, "abc'def")
-
-# Make the changes to the database persistent
->>> conn.commit()
-
-# Close communication with the database
->>> cur.close()
->>> conn.close()
-
 class Db:
+    ''' Database class that handles connection to the database '''
     def __init__(self) -> None:
-        self.connection = psycopg2.connect(**appConfig.db.db_connect)
-        self.cursor = self.connection.cursor()
+        self.host     = appConfig.db.host
+        self.user     = appConfig.db.user
+        self.password = appConfig.db.password
+        self.dbname   = appConfig.db.dbname
+        self.port     = appConfig.db.port
+        self.conn     = None
 
     def connect(self):
-        return self.engine.connect()
+        if self.conn is None:
+            try:
+                self.conn = psycopg2.connect(
+                    host=self.host,
+                    user=self.user,
+                    password=self.password,
+                    port=self.port,
+                    dbname=self.dbname
+                )
+            except psycopg2.DatabaseError as e:
+                raise e
 
-    def test_connection(self) -> bool:
-        try:
-            with self.connect() as c:
-                is_connected = True
-        except:
-            is_connected = False
-        return is_connected
+    def execute(self, sql: str) -> bool:
+        ''' Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. '''
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)            
 
-    def query(self, sql):
-        with self.connect() as c:
-            results = c.execute(sql)
-        return [ str(row) for row in results ]
-    
-    def execute(self, sql):
-        ''' Executes a SQL statement where there is no value returned'''
-        try:
-            with self.connect() as c:
-                c.execute(sql)
-            return True
-        except Exception as e:
-            print(e)
-            return False
+    def query(self, sql: str) -> list:
+        ''' Query the database, returns a dictionary'''
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            columns = [desc[0] for desc in cursor.description]
+            records = [ dict(zip(columns, row)) for row in cursor.fetchall()]
+            cursor.close()
+            return records
 
-    def nextUniqueId(self, db_class) -> int:
-        ''' Get the next id for inserting into database. '''
-        maxId  = self.session.query(func.max(db_class)).first()[0]
-        nextId = maxId + 1 if maxId != None else 0
-        return nextId
-
-    def returnDictFromDboObject(self, db_object) -> dict:
-        ''' If there is a db_object it will convert from sqlalchemy object to dict else return None'''
-        if db_object:
-            object_dict = db_object.__dict__
-            object_dict.pop('_sa_instance_state', None)
-            return object_dict
-        else:
-            return None
+    def queryOne(self, sql: str) -> dict:
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            columns = [desc[0] for desc in cursor.description]
+            records = dict(zip(columns, cursor.fetchone()))
+            cursor.close()
+            return records        
  
+    def scalar(self, sql):
+        ''' Returns a scalar result'''
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            records = cursor.fetchone()
+            cursor.close()
+            return records[0] 
+
+    # Add or update records
+    def add(self, table: str, dbo: dict):
+        ''' Add a single new record '''
+        pass
+
+    def upsert(self, table: str, dbo: dict):
+        ''' Insert or updates a record as necessary 
+                Params:
+                    - table: the table name you want to add / update 
+                    - dbo: a dictionary containing the column names you want to add
+        '''
+        self.connect()
+        # Find the primary keys of the table
+        sql = f'''
+            SELECT c.column_name, c.data_type
+            FROM information_schema.table_constraints tc 
+            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
+            JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
+            AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+            WHERE constraint_type = 'PRIMARY KEY' and tc.table_name = '{ table }';
+            '''
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            primary_keys = [ row[0] for row in cursor.fetchall() ]
+
+        dbo_has_keys = False
+        for pk in primary_keys:
+
+        print(primary_keys)
+
 db = Db()

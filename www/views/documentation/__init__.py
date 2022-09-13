@@ -2,8 +2,7 @@ from    flask       import Blueprint, json, redirect, request, send_file, sessio
 
 from    www         import config
 
-from    database    import __admin__ as db_admin, docs_db
-from    www.modules.decorators      import permissions_required
+# from    database    import __admin__ as db_admin, docs_db
 from    www.views.documentation.views   import DocumentationPageView
 from    www.views.documentation.widgets import DocsRoutesWidget, DocsWidget, DocsAdminWidget
 from    modules import generate_docs
@@ -11,7 +10,6 @@ from    modules import generate_docs
 bp = Blueprint('documentation', __name__)
 
 @bp.route("/documentation", methods=['GET','POST'])
-#@permissions_required(config.Permissions.developer)
 def documentation():
     ''' Main developer page. The intention is to provide easy access to common functions 
     and simplify the db updates and restores'''
@@ -20,7 +18,6 @@ def documentation():
 
 
 @bp.route('/widget/documentation/<section>')
-#@permissions_required(config.Permissions.developer)
 def dev_documentation(section):
     kwargs = request.args.to_dict()
     if section == 'rebuild':

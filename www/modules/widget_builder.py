@@ -1,7 +1,7 @@
 from    math    import ceil
 from    flask   import session
 
-from    www               import config as conf
+from    www     import config as conf
 
 
 class WidgetBuilder:

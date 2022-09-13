@@ -1,5 +1,5 @@
 from glob import glob
-from database import docs_db
+# from database import docs_db
 
 class Docs:
     def __init__(self) -> None:

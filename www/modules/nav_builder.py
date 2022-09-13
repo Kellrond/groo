@@ -33,14 +33,5 @@ class NavBuilder():
                 <li class="nav-item">
                     <a class="nav-link" href="{ url_for('documentation.documentation') }">Documentation</a>
                 </li>  
-                <li class="nav-item">
-                    <a class="nav-link" href="{ url_for('bulletin_board.bulletin_board') }">Bulletin board</a>
-                </li>  
-                <li class="nav-item">
-                    <a class="nav-link" href="{ url_for('site_admin.site_admin') }">Site admin</a>
-                </li>  
-                <li class="nav-item">
-                    <a class="nav-link" href="{ url_for('developer.developer') }">Developer</a>
-                </li>  
             </ul>
             '''

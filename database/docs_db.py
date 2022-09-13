@@ -1,6 +1,5 @@
-from www         import config
-from database    import __schema__ as schema
-from database   import db
+from www      import config
+from database import db
 
 def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
     page = int(page) - 1 # adjust for pagination offest to start from 1
@@ -25,25 +24,16 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         WHERE f.file_path like '{ like_str }'
         ORDER BY f.file_path
     '''
-
-    file_paths_query = db.session.execute(sql).all()
-    file_paths = [x.file_path for x in file_paths_query ]
-    file_ids = [ x.file_id for x in file_paths_query ] 
+    file_paths_query = db.query(sql)
+    file_paths = [x.get('file_path') for x in file_paths_query ]
+    file_ids = [ x.get('file_id') for x in file_paths_query ] 
 
     # Filepaths 
     sql = f'''
         SELECT * FROM doc_files f
         ORDER BY f.file_path
     '''
-
-    tempQuery = db.session.execute(sql)
-    nav_list = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        nav_list.append(tempDict)
+    nav_list = db.query(sql)
 
     # Classes
     sql = f'''
@@ -53,15 +43,7 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         WHERE c.file_id IN ('{ "','".join([ str(x) for x in file_ids]) }')
         ORDER BY c.name    
     '''
-
-    tempQuery = db.session.execute(sql)
-    classes = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        classes.append(tempDict)
+    classes = db.query(sql)
 
     # Routes
     sql = f'''
@@ -71,15 +53,7 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         WHERE r.file_id IN ('{ "','".join([ str(x) for x in file_ids]) }')
         ORDER BY r.url    
     '''
-
-    tempQuery = db.session.execute(sql)
-    routes = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        routes.append(tempDict)
+    routes = db.query(sql)
 
 
     # imports
@@ -90,15 +64,7 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         WHERE d.file_id IN ('{ "','".join([ str(x) for x in file_ids]) }')
         ORDER BY d.module, d.object    
     '''
-
-    tempQuery = db.session.execute(sql)
-    imports = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        imports.append(tempDict)
+    imports = db.query(sql)
 
     # Class methods 
     sql = f'''
@@ -110,16 +76,8 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         AND LEFT(f.name, 1) <> '_'
         ORDER BY f.name
     '''
-
-    tempQuery = db.session.execute(sql)
-    methods = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        methods.append(tempDict)
-
+    methods = db.query(sql)
+    
     # Functions 
     sql = f'''
         SELECT f.*, fi.file_path
@@ -130,15 +88,7 @@ def paginateDocs(lvl1,lvl2,lvl3,lvl4,lvl5,lvl6,page=1) -> dict:
         AND LEFT(f.name, 1) <> '_'
         ORDER BY f.name
     '''
-
-    tempQuery = db.session.execute(sql)
-    functions = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        functions.append(tempDict)
+    functions = db.query(sql)
 
     return { 'file_path': file_paths, 'nav_list': nav_list, 'classes': classes, 'class_funcs': methods, 'functions': functions, 'routes': routes, 'imports': imports}
 
@@ -167,14 +117,7 @@ def paginateImportDependancies() -> dict:
         GROUP BY f.file_path
         ORDER BY f.file_path
     '''
-    tempQuery = db.session.execute(sql)
-    internal_dependencies = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        internal_dependencies.append(tempDict)
+    internal_dependencies = db.query(sql)
 
     sql = f'''
         SELECT *
@@ -190,16 +133,7 @@ def paginateImportDependancies() -> dict:
 
         ORDER BY f.file_path;
     '''
-    tempQuery = db.session.execute(sql)
-    external_dependencies = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        external_dependencies.append(tempDict)
-
-
+    external_dependencies = db.query(sql)
 
     return { 'internal': internal_dependencies, 'external': external_dependencies }
 
@@ -211,16 +145,7 @@ def paginateRoutes() -> dict:
         JOIN doc_files f ON r.file_id = f.file_id
         ORDER BY r.url;
     '''
-    tempQuery = db.session.execute(sql)
-    query = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        query.append(tempDict)
-
-    count = db.session.execute(sql)
+    query = db.query(sql)
     return {'results': query}
 
 def paginateStats() -> dict:
@@ -240,44 +165,25 @@ def paginateStats() -> dict:
             ,SUM(CASE WHEN f.ext = 'sql' THEN f.lines ELSE 0 END) AS sql_lines
         FROM doc_files f
     '''
-    tempQuery = db.session.execute(sql)
-    summary = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        # Summary here is = since the statement returns only one row
-        summary = tempDict
+    summary = db.queryOne(sql)
 
     sql = f'''
         SELECT *
         FROM doc_files f
         ORDER BY f.file_path
     '''
-    tempQuery = db.session.execute(sql)
-    file_list = []
-    keys = [x for x in tempQuery.keys()]
-    for row in tempQuery:
-        tempDict = {}
-        for i in range(len(keys)):
-            tempDict[keys[i]] = row[i]
-        # file_list here is = since the statement returns only one row
-        file_list.append(tempDict)
+    file_list = db.query(sql)
 
     return {'summary': summary, 'detail': file_list}
 
 def dropAllDocs() -> bool:
-    # try:
+    ''' When rebuilding the documentation we dont want to keep the old '''
     tables = ['doc_routes', 'doc_functions', 'doc_classes', 'doc_dependencies', 'doc_folders', 'doc_files']
     for table in tables:
         sql = f'DELETE FROM { table } WHERE 1=1;'
         db.execute(sql)
     return True
-    # except Exception as e: 
-    #     db.session.rollback()
-    #     logger.write(activity='drop all route docs from DC', resource_id='', error=e)
-    #     return False     
+
 
 def getDocFolderIdFromFilePath(file_path):
     file_path = file_path.split('/')
@@ -290,7 +196,7 @@ def getDocFolderIdFromFilePath(file_path):
         WHERE f.file_path = '{ file_path }'
     '''
 
-    return db.session.execute(sql).scalar()
+    return db.scalar(sql)
 
 def getDocFileIdFromFilePath(file_path):
     folder_id = getDocFolderIdFromFilePath(file_path) 
@@ -303,29 +209,25 @@ def getDocFileIdFromFilePath(file_path):
         WHERE f.folder_id = '{ folder_id }'
         AND f.name = '{ name }'
     '''
-    return db.session.execute(sql).scalar()
+    return db.scalar(sql)
 
 def updateDocRoutesDb(routes) -> bool:
     ''' Adds to the documentation for routes '''
-    try:
-        for link in routes:
-            file_path = link.get('file_path')
-            permissions = link.get('permissions')
+    for link in routes:
+        file_path = link.get('file_path')
+        permissions = link.get('permissions')
 
-            for url in link.get('route'):
-                route_dbo = schema.Doc_routes(
-                    file_id     = getDocFileIdFromFilePath(file_path)
-                    ,methods     = ", ".join(url.get('methods',[]))
-                    ,permissions = permissions
-                    ,url         = url.get('url')
-                )
-                db.session.add(route_dbo)
-                
-        db.session.commit()
-        return True
-    except Exception as e:
-        db.session.rollback()
-        return False
+        for url in link.get('route'):
+            route_dbo = schema.Doc_routes(
+                file_id     = getDocFileIdFromFilePath(file_path)
+                ,methods     = ", ".join(url.get('methods',[]))
+                ,permissions = permissions
+                ,url         = url.get('url')
+            )
+            db.upsert(route_dbo)
+            
+    db.session.commit()
+    return True
 
 def updateDocClassesDb(classes) -> bool:
     ''' Adds to the documentation for classes '''
