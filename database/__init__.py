@@ -13,6 +13,7 @@ class Db:
         self.conn     = None
 
     def commit(self):
+        ''' Commit the last set of statements to the database '''
         if self.conn is not None:
             self.conn.commit()
 
@@ -28,6 +29,29 @@ class Db:
                 )
             except psycopg2.DatabaseError as e:
                 raise e          
+
+    def nextId(self, table):
+        primary_keys = self.getPrimaryKeyNamesFromTable(table)
+        if len(primary_keys) == 1:
+            sql = f'SELECT MAX({ primary_keys[0] }) FROM { table }'
+            max_id = self.scalar(sql)
+            return max_id + 1
+
+    def getPrimaryKeyNamesFromTable(self, table: str) -> list:
+        self.connect()
+        # Find the primary keys of the table
+        sql = f'''
+            SELECT c.column_name, c.data_type
+            FROM information_schema.table_constraints tc 
+            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
+            JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
+            AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+            WHERE constraint_type = 'PRIMARY KEY' and tc.table_name = '{ table }';
+            '''
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            primary_keys = [ row[0] for row in cursor.fetchall() ]
+        return primary_keys
 
     # Queries with a return
     def query(self, sql: str) -> list:
@@ -64,7 +88,7 @@ class Db:
         self.connect()
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
-              
+
     def add(self, table: str, dbo: dict):
         ''' Add a single new record '''
         columns = ", ".join(dbo.keys())
@@ -85,21 +109,9 @@ class Db:
                     - table: the table name you want to add / update 
                     - dbo: a dictionary containing the column names you want to add
         '''
-        self.connect()
-        # Find the primary keys of the table
-        sql = f'''
-            SELECT c.column_name, c.data_type
-            FROM information_schema.table_constraints tc 
-            JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
-            JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
-            AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
-            WHERE constraint_type = 'PRIMARY KEY' and tc.table_name = '{ table }';
-            '''
-        with self.conn.cursor() as cursor:
-            cursor.execute(sql)
-            primary_keys = [ row[0] for row in cursor.fetchall() ]
 
         # Prepare the strings for insertion into query
+        primary_keys = self.getPrimaryKeyNamesFromTable(table)
         primary_keys = ", ".join(primary_keys)
         columns = ", ".join(dbo.keys())
         excluded_cols = ", ".join([ f"EXCLUDED.{col}" for col in dbo.keys() ])
@@ -117,6 +129,7 @@ class Db:
             ON CONFLICT ({ primary_keys }) DO UPDATE SET
             { columns } = { excluded_cols }
         '''
+        self.connect()
         with self.conn.cursor() as cursor:
             cursor.execute(sql, values)  
 

@@ -218,48 +218,48 @@ def updateDocRoutesDb(routes) -> bool:
         permissions = link.get('permissions')
 
         for url in link.get('route'):
-            route_dbo = schema.Doc_routes(
-                file_id     = getDocFileIdFromFilePath(file_path)
-                ,methods     = ", ".join(url.get('methods',[]))
-                ,permissions = permissions
-                ,url         = url.get('url')
-            )
+            route_dbo = {
+                'file_id'      : getDocFileIdFromFilePath(file_path)
+                ,'methods'     : ", ".join(url.get('methods',[]))
+                ,'permissions' : permissions
+                ,'url'         : url.get('url')
+            }
+
             db.upsert(route_dbo)
             
-    db.session.commit()
+    db.commit()
     return True
 
 def updateDocClassesDb(classes) -> bool:
     ''' Adds to the documentation for classes '''
     try:
         for cls in classes:
-            class_id    = nextUniqueId(schema.Doc_classes.class_id)
-            class_dbo = schema.Doc_classes(
-                class_id    = class_id
-                ,file_id    = getDocFileIdFromFilePath(cls.get('file_path'))
-                ,name       = cls.get('name')
-                ,superclass = ", ".join(cls.get('superclass',[]))
-                ,docstring  = cls.get('docstring')
-                ,parameters = cls.get('parameters')
-            )
-            db.session.add(class_dbo)
-            db.session.commit()
+            class_id  = db.nextId(table='doc_classes')
+            class_dbo = {
+                'class_id'    : class_id
+                ,'file_id'    : getDocFileIdFromFilePath(cls.get('file_path'))
+                ,'name'       : cls.get('name')
+                ,'superclass' : ", ".join(cls.get('superclass',[]))
+                ,'docstring'  : cls.get('docstring')
+                ,'parameters' : cls.get('parameters')
+            }
+            
+            db.add(class_dbo)
             for func in cls.get('methods'):
-                func_id = nextUniqueId(schema.Doc_functions.function_id)
-                func_dbo = schema.Doc_functions(
-                    function_id = func_id
-                    ,class_id   = class_id
-                    ,file_id    = getDocFileIdFromFilePath(func.get('file_path'))
-                    ,name       = func.get('name')
-                    ,returns    = func.get('returns')
-                    ,docstring  = func.get('docstring')
-                    ,parameters = func.get('parameters')
-                )
-                db.session.add(func_dbo)
-        db.session.commit()
+                func_id = db.nextId(table='doc_functions')
+                func_dbo = {
+                    'function_id' : func_id
+                    ,'class_id'   : class_id
+                    ,'file_id'    : getDocFileIdFromFilePath(func.get('file_path'))
+                    ,'name'       : func.get('name')
+                    ,'returns'    : func.get('returns')
+                    ,'docstring'  : func.get('docstring')
+                    ,'parameters' : func.get('parameters')
+                }
+                db.add(func_dbo)
+        db.commit()
         return True
     except Exception as e:
-        db.session.rollback()
         return False
 
 def updateDocFilesDb(file_paths) -> bool:
@@ -278,37 +278,37 @@ def updateDocFilesDb(file_paths) -> bool:
         with open(fp, 'r') as file:
             lines = len(file.readlines())
 
-        file_dbo = schema.Doc_files(
-            file_id = id
-            ,folder_id = folder_id
-            ,name  = fp.split('/').pop()
-            ,file_path = fp
-            ,ext   = ext
-            ,lines = lines
-        )
-        db.session.add(file_dbo)
-        db.session.commit()
+        file_dbo = {
+            'file_id' : id
+            ,'folder_id' : folder_id
+            ,'name'  : fp.split('/').pop()
+            ,'file_path' : fp
+            ,'ext'   : ext
+            ,'lines' : lines
+        }
+        
+        db.add(file_dbo)
+        db.commit()
 
 def updateDocFunctionsDb(functions) -> bool:
     ''' Adds to the documentation for functions '''
     try:
         for func in functions:
-            func_id = nextUniqueId(schema.Doc_functions.function_id)
-            func_dbo = schema.Doc_functions(
-                function_id = func_id
-                ,class_id   = None
-                ,file_id    = getDocFileIdFromFilePath(func.get('file_path'))
-                ,name       = func.get('name')
-                ,returns    = func.get('returns')
-                ,docstring  = func.get('docstring')
-                ,parameters = func.get('parameters')
-            )
-            db.session.add(func_dbo)
-        db.session.commit()
+            func_id = db.nextId(table='doc_functions')
+            func_dbo = {
+                'function_id' : func_id
+                ,'class_id'   : None
+                ,'file_id'    : getDocFileIdFromFilePath(func.get('file_path'))
+                ,'name'       : func.get('name')
+                ,'returns'    : func.get('returns')
+                ,'docstring'  : func.get('docstring')
+                ,'parameters' : func.get('parameters')
+            }
+            
+            db.add(func_dbo)
+        db.commit()
         return True
     except Exception as e:
-        db.session.rollback()
-        logger.write(activity='write functions', resource_id='', error=e)
         return False
 
 def updateDocFolderDb(folders) -> bool:
@@ -326,10 +326,16 @@ def updateDocFolderDb(folders) -> bool:
                 parent_id = root_id
             # The parents should all be in place now we 
             else:
-                parent_path = db.session.query(schema.Doc_folders).filter(schema.Doc_folders.file_path == '/'.join(split_fp[:-1]) + '/').first()
+                folder_path = '/'.join(split_fp[:-1]) + '/'
+                sql = f'''
+                    SELECT * 
+                    FROM doc_folders f
+                    WHERE f.file_path = { folder_path }
+                '''
+                parent_path = db.queryOne(sql)
                 
                 if parent_path:
-                    parent_id = parent_path.folder_id
+                    parent_id = parent_path.get('folder_id')
 
             # Name the root folder
             if len(split_fp) >= 1:
@@ -337,21 +343,19 @@ def updateDocFolderDb(folders) -> bool:
             else:
                 name = '/'
 
-
-            func_dbo = schema.Doc_folders(
-                folder_id   = folder.get('folder_id')
-                ,parent_id  = parent_id
-                ,file_path  = folder.get('file_path') if folder.get('file_path') != '' else '/'
-                ,name       = name
-            )
-            db.session.add(func_dbo)
-            db.session.commit()
+            func_dbo = {
+                'folder_id'   : folder.get('folder_id')
+                ,'parent_id'  : parent_id
+                ,'file_path'  : folder.get('file_path') if folder.get('file_path') != '' else '/'
+                ,'name'       : name
+            }
+            db.add(func_dbo)
+            db.commit()
 
 
         return True
     except Exception as e:
         db.session.rollback()
-        logger.write(activity='write docs folder heirarchy', resource_id='', error=e)
         return False
 
 def updateDocDependencyDb(depenancies) -> bool:
@@ -360,21 +364,19 @@ def updateDocDependencyDb(depenancies) -> bool:
         for dep in depenancies:
             if len(dep.get('objects')) > 0:
                 for obj in dep.get('objects'):
-                    depencancy_dbo = schema.Doc_dependencies(   
-                        file_id     = getDocFileIdFromFilePath(dep.get('file_path'))
-                        ,module    = dep.get('module')
-                        ,object    = obj
-                    )
-                    db.session.add(depencancy_dbo)
+                    depencancy_dbo = {
+                        'file_id' : getDocFileIdFromFilePath(dep.get('file_path'))
+                        ,'module' : dep.get('module')
+                        ,'object' : obj
+                    }
+                    db.add(depencancy_dbo)
             else:
-                depencancy_dbo = schema.Doc_dependencies(
-                    file_id    = getDocFileIdFromFilePath(dep.get('file_path'))
-                    ,module    = dep.get('module')
-                )
-                db.session.add(depencancy_dbo)                
-        db.session.commit()
+                depencancy_dbo = {
+                    'file_id' : getDocFileIdFromFilePath(dep.get('file_path'))
+                    ,'module' : dep.get('module')
+                }
+                db.add(depencancy_dbo)                
+        db.commit()
         return True
     except Exception as e:
-        db.session.rollback()
-        logger.write(activity='write functions', resource_id='', error=e)
         return False
