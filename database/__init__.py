@@ -12,6 +12,10 @@ class Db:
         self.port     = appConfig.db.port
         self.conn     = None
 
+    def commit(self):
+        if self.conn is not None:
+            self.conn.commit()
+
     def connect(self):
         if self.conn is None:
             try:
@@ -23,14 +27,9 @@ class Db:
                     dbname=self.dbname
                 )
             except psycopg2.DatabaseError as e:
-                raise e
+                raise e          
 
-    def execute(self, sql: str) -> bool:
-        ''' Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. '''
-        self.connect()
-        with self.conn.cursor() as cursor:
-            cursor.execute(sql)            
-
+    # Queries with a return
     def query(self, sql: str) -> list:
         ''' Query the database, returns a dictionary'''
         self.connect()
@@ -59,10 +58,26 @@ class Db:
             cursor.close()
             return records[0] 
 
-    # Add or update records
+    # Add or update records, execute statement
+    def execute(self, sql: str) -> bool:
+        ''' Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. '''
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+              
     def add(self, table: str, dbo: dict):
         ''' Add a single new record '''
-        pass
+        columns = ", ".join(dbo.keys())
+        placeholders = ", ".join([ '%s' for x in dbo.values() ])  
+        values = tuple(dbo.values())
+
+        sql = f'''
+            INSERT INTO { table } ({ columns })
+            VALUES ({ placeholders })
+        '''
+        self.connect()
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql, values)        
 
     def upsert(self, table: str, dbo: dict):
         ''' Insert or updates a record as necessary 
@@ -84,9 +99,25 @@ class Db:
             cursor.execute(sql)
             primary_keys = [ row[0] for row in cursor.fetchall() ]
 
-        dbo_has_keys = False
-        for pk in primary_keys:
+        # Prepare the strings for insertion into query
+        primary_keys = ", ".join(primary_keys)
+        columns = ", ".join(dbo.keys())
+        excluded_cols = ", ".join([ f"EXCLUDED.{col}" for col in dbo.keys() ])
+        placeholders = ", ".join([ '%s' for x in dbo.values() ])  
+        values = tuple(dbo.values())
+        
+        # If upserting only a single column the () would break the statement. Putting them back is len > 1
+        if len(dbo) > 1:
+            columns = f'({ columns })'
+            excluded_cols = f'({ excluded_cols })'
 
-        print(primary_keys)
+        sql = f'''
+            INSERT INTO { table } ({ columns })
+            VALUES ({ placeholders })
+            ON CONFLICT ({ primary_keys }) DO UPDATE SET
+            { columns } = { excluded_cols }
+        '''
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql, values)  
 
 db = Db()
