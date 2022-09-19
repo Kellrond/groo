@@ -16,5 +16,3 @@ dbo = {
 
 db.upsert('tt', dbo)
 db.commit()
-
-print(db.query('SELECT * FROM tt'))

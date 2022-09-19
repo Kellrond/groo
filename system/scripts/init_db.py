@@ -1,7 +1,7 @@
-import appConfig
+import config
 
 from database import Db
 from database.__schema__ import buildTables
 
-db = Db(appConfig.db.garden_connect)
+db = Db(config.db.garden_connect)
 buildTables(db)

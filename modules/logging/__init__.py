@@ -1,59 +1,72 @@
 import  datetime as dt
-from    flask    import session, request
+import  os
 
-from    www.config       import logging_level
-from    database.log_db  import writeLogToDb
-from    modules.logging import apache_etl
-
+import  config 
 
 class Log():
-    ''' Captains Log: Stardate 41153.7 
-        The standard logger boiler plate looks like this 
-- Head looks like this 
-`from    www.modules               import logging`
-`logger = logging.Log(py=__name__)`
-
-- The action you are trying and logging.  If no try needed great. Just use the logger.write()
-`try:
-    db.session.commit()
-    msg_txt = f'{log_activity.capitalize()}d and more information here'
-    logger.write(activity=log_activity, resource_id=resource_id if any, note=msg_txt)
-    return {'success': True, 'msg': msg_txt, 'additional_return_data': data }
-except Exception as e:
-    db.session.rollback()
-    logger.write(activity= log_activity, resource_id=manifest_id, error=e)
-    return {'success': False, 'msg': str(e), 'additional_return_data': data}`
-
+    ''' Handles logging throughout the app
     '''
-    def __init__(self, py) -> None:
-        self.logging_level  = logging_level 
-        self.py = py
 
-    def write(self, activity=None, error=None, level = 2, note = None, resource_id=None) -> None:
-        ''' Write a log, activity is the action taking place, 
-            Currently only two levels: 1 and 2. 1 being an error and 2 being a message 
-                - Eventually this may mirror more standard log levels if more logging is helpful
-        '''
-        argDict     = request.args.to_dict()      
-        endpoint    = request.endpoint
-        ip          = request.remote_addr
+    log_files = ['gro.log']
 
-        log_dict = {
-            'activity'      : activity,
-            'args'          : '\n'.join([f'{k}: {v}' for k,v in argDict.items()]),
-            'user_id'       : session.get('user_id','visitor'),
-            'endpoint'      : endpoint,
-            'error'         : str(error) if error else None,
-            'ip'            : ip,
-            'level'         : level if error == None or level != 2 else 1,
-            'note'          : note,
-            'py'            : self.py,
-            'resource_id'   : resource_id,
-            'timestamp'     : dt.datetime.now(),
+    def __init__(self) -> None:
+        self.config = config.logging 
+        
+    @classmethod
+    def from_test_conf(cls, config):
+        ''' Instantiates a class using the test configuration passed in. '''
+        temp_class = cls()
+        temp_class.config = config
+        return temp_class
+
+
+    def fatal(self) -> None:
+        ''' Log level: 0'''
+        
+
+    def error(self) -> None:
+        ''' Log level: 1'''
+        pass
+
+    def warn(self) -> None:
+        ''' Log level: 2'''
+        pass
+
+    def info(self) -> None:
+        ''' Log level: 3'''
+        pass
+
+    def debug(self, txt: str, py) -> None:
+        ''' Log level: 4'''
+        log = {
+            'timestamp': dt.datetime.now(),
+            'level': 4,
+            'name': 'DEBUG',
+            'source': py,
+            'body': txt,
         }
-        # This places errors in the apache log as well
-        if error:
-            print(error)
+        self.consoleLog(log)
+        self.fileLog(log)
+    # Log file control
+    def init_logs(self) -> None:
+        ''' Check if the log files exist and create if they don't exist '''
 
-        writeLogToDb(log_dict)
+        # Appending will create a file if there is none
+        for file in self.log_files:
+            with open(f'{self.config.log_dir}/{file}', 'w'):
+                pass 
+        
+    def delete_dot_logs(self) -> None:
+        ''' Remove all .log files created '''
+        for file_path in self.log_files:
+            os.remove(f'{self.config.log_dir}/{file_path}')
 
+    # Output logs
+    def consoleLog(self, log: dict):
+        if log.get('level') <= self.config.terminal_level:
+            print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{log.get('body')}")
+ 
+    def fileLog(self, log: dict): 
+        if log.get('level') <= self.config.terminal_level:
+            with open(f'{self.config.log_dir}/gro.log', 'a') as file:
+                file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{log.get('body')}")

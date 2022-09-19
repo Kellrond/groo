@@ -1,15 +1,15 @@
 import  psycopg2
 
-import appConfig
+import config
 
 class Db:
     ''' Database class that handles connection to the database '''
     def __init__(self) -> None:
-        self.host     = appConfig.db.host
-        self.user     = appConfig.db.user
-        self.password = appConfig.db.password
-        self.dbname   = appConfig.db.dbname
-        self.port     = appConfig.db.port
+        self.host     = config.db.host
+        self.user     = config.db.user
+        self.password = config.db.password
+        self.dbname   = config.db.dbname
+        self.port     = config.db.port
         self.conn     = None
 
     def commit(self):
