@@ -42,10 +42,11 @@ gitEmail="kellrond@gmail.com"
 gitCred="store"
 
 # Do not change these variables unless the related login the the code base is changed as well
-SQL_USER="garden"
-SQL_PASS="garden"
-DB_NAME="garden"
-REPO_NAME="garden_pi"
+INSTALL_DIR="/srv"
+SQL_USER="groo"
+SQL_PASS="groo"
+DB_NAME="groo"
+REPO_NAME="groo"
 
 # Start the total duration timer
 START_TIME=$SECONDS
@@ -77,9 +78,9 @@ fi
 echo "Clone git repos"
 ####
 su - $linuxUser <<HERE
-    cd /home/$piUserName
-    git clone --quiet https://github.com/Kellrond/garden_pi.git
-    git config --global --add safe.directory /home/$piUserName/$REPO_NAME
+    cd $INSTALL_DIR
+    git clone --quiet https://github.com/Kellrond/groo.git
+    git config --global --add safe.directory /srv/$REPO_NAME
 HERE
 
 duration=($SECONDS - $t_start)
@@ -90,6 +91,11 @@ echo " == SETUP =="
 ####
 t_start=$SECONDS
 
+echo "linux: set folder permissions"
+####
+chown $piUserName:$piUserName -R $INSTALL_DIR/$REPO_NAME
+chmod 755 -R $INSTALL_DIR/$REPO_NAME
+
 echo "git: user.name, user.email and cedential.helper"
 ####
 su - $piUserName <<HERE
@@ -97,7 +103,8 @@ su - $piUserName <<HERE
     git config --global user.name "$gitName"
     git config --global credential.helper $gitCred
 HERE
-chmod 777 -R /home/$piUserName/$REPO_NAME
+
+chmod 777 -R $INSTALL_DIR/$REPO_NAME
 
 echo "postgres: Setup to allow remote connections"
 ####
