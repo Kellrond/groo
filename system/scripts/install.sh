@@ -126,7 +126,7 @@ su - postgres <<HERE
     send "$SQL_PASS\n"
     expect eof
 EOD
-createdb $dbname 
+createdb $DB_NAME 
 HERE
 
 if [ $developerInstall = TRUE ]
@@ -134,7 +134,7 @@ then
 echo "postgres: Setup test database"
 ####
 su - postgres <<HERE
-createdb test_$dbname 
+createdb test_$DB_NAME 
 HERE
 fi
 
