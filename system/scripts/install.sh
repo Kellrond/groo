@@ -58,11 +58,11 @@ t_start=$SECONDS
 #### If installing on Ubuntu 22.04 there is a prompt that needs silencing
 if test -f "/etc/needrestart/needrestart.conf"
 then
-    echo " Silence the 'Daemons using outdated libraries' message"
+    echo "Silence the 'Daemons using outdated libraries' message"
     sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g'  /etc/needrestart/needrestart.conf
 fi
 
-echo "Install packages"                                                                            
+echo "intall: packages"                                                                            
 ####
 
 apt-get -qq update > /dev/null
@@ -71,11 +71,11 @@ apt-get -qq -y install apache2 expect git postgresql python3-dev python3-venv uf
 
 if [ $desktopInstall = TRUE ] 
 then
-    echo "Install development packages"                                                                            
+    echo "install: desktop development packages"                                                                            
     apt -qq -y install code
 fi
 
-echo "Clone git repos"
+echo "git: clone repo"
 ####
 su - $linuxUser <<HERE
     cd $INSTALL_DIR
@@ -84,7 +84,7 @@ su - $linuxUser <<HERE
 HERE
 
 duration=($SECONDS - $t_start)
-echo "Installs and downloads completed in $duration seconds"
+echo "  installs and downloads completed in $duration seconds"
 
 
 echo " == SETUP =="
@@ -166,10 +166,6 @@ python3 -m venv venv
 echo "python: install dependancies in venv"
 ####
 $INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r $INSTALL_DIR/$REPO_NAME/config/python_requirements.txt
-
-echo "database: build empty database from schema"
-####
-$INSTALL_DIR/$REPO_NAME/venv/bin/python3 $INSTALL_DIR/$REPO_NAME/database/initialize_db.py
 
 duration=($SECONDS - $t_start)
 echo " Setup completed in $duration seconds"
