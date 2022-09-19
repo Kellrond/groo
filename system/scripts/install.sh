@@ -10,18 +10,18 @@ if [ "$EUID" -ne 0 ]
 fi
 
 clear
-
-echo "                                                                             "
-echo "                                   ▄▄                                    ▄▄  "
-echo "  ▄▄█▀▀▀█▄█                      ▀███                        ▀███▀▀▀██▄  ██  "
-echo "▄██▀     ▀█                        ██                          ██   ▀██▄     "
-echo "██▀       ▀ ▄█▀██▄ ▀███▄███   ▄█▀▀███   ▄▄█▀██▀████████▄       ██   ▄██▀███  "
-echo "██         ██   ██   ██▀ ▀▀ ▄██    ██  ▄█▀   ██ ██    ██       ███████   ██  "
-echo "██▄    ▀████▄█████   ██     ███    ██  ██▀▀▀▀▀▀ ██    ██       ██        ██  "
-echo "▀██▄     ████   ██   ██     ▀██    ██  ██▄    ▄ ██    ██       ██        ██  "
-echo "  ▀▀███████▀████▀██▄████▄    ▀████▀███▄ ▀█████▀████  ████▄   ▄████▄    ▄████▄"
-echo "                                                                             "
-echo "_____________________________________________________________________________"
+ 
+echo "                                                                              "
+echo "                                    ▄▄                                    ▄▄  "
+echo "   ▄▄█▀▀▀█▄█                      ▀███                        ▀███▀▀▀██▄  ██  "
+echo " ▄██▀     ▀█                        ██                          ██   ▀██▄     "
+echo " ██▀       ▀ ▄█▀██▄ ▀███▄███   ▄█▀▀███   ▄▄█▀██▀████████▄       ██   ▄██▀███  "
+echo " ██         ██   ██   ██▀ ▀▀ ▄██    ██  ▄█▀   ██ ██    ██       ███████   ██  "
+echo " ██▄    ▀████▄█████   ██     ███    ██  ██▀▀▀▀▀▀ ██    ██       ██        ██  "
+echo " ▀██▄     ████   ██   ██     ▀██    ██  ██▄    ▄ ██    ██       ██        ██  "
+echo "   ▀▀███████▀████▀██▄████▄    ▀████▀███▄ ▀█████▀████  ████▄   ▄████▄    ▄████▄"
+echo "                                                                              "
+echo "_______________________________________________________________________________"
 echo ""
 echo " This script will set up the Raspberry Pi with any dependencies required "
 echo ""
@@ -115,7 +115,7 @@ echo "host    all             all              0.0.0.0/0                       m
 echo "host    all             all              ::/0                            md5" >> $postgres_config_dir/main/pg_hba.conf
 sed -i "s:# Put your actual configuration here:# Put your actual configuration here\nlocal   all             $SQL_USER                                password:g" $postgres_config_dir/main/pg_hba.conf
 
-echo "postgres: Setup user(s)"
+echo "postgres: Setup user(s) and create database"
 ####
 su - postgres <<HERE
 /usr/bin/expect <<EOD
@@ -126,18 +126,37 @@ su - postgres <<HERE
     send "$SQL_PASS\n"
     expect eof
 EOD
-createdb garden 
+createdb $dbname 
 HERE
+
+if [ $developerInstall = TRUE ]
+then
+echo "postgres: Setup test database"
+####
+su - postgres <<HERE
+createdb test_$dbname 
+HERE
+fi
 
 echo "postgres: restart service"
 ####
 service postgresql restart
 
-echo "postgres: create database"
+echo "postgres: create database schema"
 ####
 su - postgres <<HERE
 PGOPTIONS='--client-min-messages=warning' psql -X -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d $DB_NAME -f $INSTALL_DIR/$REPO_NAME/database/scripts/schema.sql
 HERE
+
+
+if [ $developerInstall = TRUE ]
+then
+echo "postgres: create test database schema"
+####
+su - postgres <<HERE
+PGOPTIONS='--client-min-messages=warning' psql -X -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d test_$DB_NAME -f $INSTALL_DIR/$REPO_NAME/database/scripts/schema.sql
+HERE
+fi
 
 echo "python: create virtual environment (venv)"
 ####
@@ -146,7 +165,7 @@ python3 -m venv venv
 
 echo "python: install dependancies in venv"
 ####
-$INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r $INSTALL_DIR/$REPO_NAME/documentation/python_pip.txt
+$INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r $INSTALL_DIR/$REPO_NAME/config/python_requirements.txt
 
 echo "database: build empty database from schema"
 ####

@@ -1,6 +1,6 @@
 from config.db import *
 # host = 'localhost'
-# user = 'garden'
-# password = 'garden'
-# dbname = 'garden' 
+# user = 'groo'
+# password = 'groo'
+dbname = 'test_groo' 
 # port = 5432

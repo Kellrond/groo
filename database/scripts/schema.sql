@@ -66,6 +66,15 @@ create table doc_routes
 			primary key
 );
 
+create table logs
+(
+	log_id integer not null constraint logs_pk
+			primary key,
+	timestamp timestamp,
+	level integer,
+	module text,
+	log text
+);
 
 
 

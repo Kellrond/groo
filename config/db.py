@@ -1,5 +1,5 @@
 host = 'localhost'
-user = 'garden'
-password = 'garden'
-dbname = 'garden' 
+user = 'groo'
+password = 'groo'
+dbname = 'groo' 
 port = 5432

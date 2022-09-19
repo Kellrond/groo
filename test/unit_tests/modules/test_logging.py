@@ -51,7 +51,44 @@ class TestLogging(unittest.TestCase):
         self.assertEqual(len(glob_logs),0,"Log files where not removed")
 
     def test_logging(self):
-        self.log.debug('Test', __name__)
+        self.log.init_logs()
+
+        logging_levels = [0, 1, 2, 3, 4]
+        log_lines = 0
+        prev_log_lines = 0
+        for lvl in logging_levels:    
+            # Set the logging level
+            self.log.config.database_level = lvl
+            self.log.config.flatfile_level = lvl
+            self.log.config.terminal_level = lvl #-1 # We dont want to print to terminal during tests
+            # Log at every level
+            self.log.fatal(f'Logging level:{lvl} Fatal:0', __name__)
+            self.log.error(f'Logging level:{lvl} Error:1', __name__)
+            self.log.warn(f'Logging level:{lvl} Warn:2', __name__)
+            self.log.info(f'Logging level:{lvl} Info:3', __name__)
+            self.log.debug(f'Logging level:{lvl} Debug:4', __name__)
+
+            # Check the log length
+            with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
+                log_lines = len(file.readlines())
+            self.assertEqual(lvl+1, log_lines - prev_log_lines, f"Lines written in log file do not match logging level { lvl }")
+            prev_log_lines = log_lines
+
+            # Once Database logging is created use that here
+            # 
+            #
+
+        # Check multi-line logs print across multiple lines. 
+        self.log.fatal('Line 1\nLine 2\nLine 3', __name__)
+        with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
+            lines = file.readlines()
+            log_lines = len(lines)
+        self.assertEqual(log_lines - prev_log_lines, 3, f"Lines written in log file do not match logging level { lvl }")            
+        self.assertGreaterEqual(len(lines[-1]), 25, "Multi-line logs do not have log meta data on new lines")
+            
+
+            
+
 
 
     # def test_apply_raise(self):

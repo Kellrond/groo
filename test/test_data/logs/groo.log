@@ -1,0 +1,18 @@
+2022-09-19 22:49:31.259796	FATAL	test.unit_tests.modules.test_logging	Logging level:0 Fatal:0
+2022-09-19 22:49:31.260657	FATAL	test.unit_tests.modules.test_logging	Logging level:1 Fatal:0
+2022-09-19 22:49:31.261312	ERROR	test.unit_tests.modules.test_logging	Logging level:1 Error:1
+2022-09-19 22:49:31.261946	FATAL	test.unit_tests.modules.test_logging	Logging level:2 Fatal:0
+2022-09-19 22:49:31.262576	ERROR	test.unit_tests.modules.test_logging	Logging level:2 Error:1
+2022-09-19 22:49:31.264255	WARN	test.unit_tests.modules.test_logging	Logging level:2 Warn:2
+2022-09-19 22:49:31.265065	FATAL	test.unit_tests.modules.test_logging	Logging level:3 Fatal:0
+2022-09-19 22:49:31.265594	ERROR	test.unit_tests.modules.test_logging	Logging level:3 Error:1
+2022-09-19 22:49:31.266270	WARN	test.unit_tests.modules.test_logging	Logging level:3 Warn:2
+2022-09-19 22:49:31.266894	INFO	test.unit_tests.modules.test_logging	Logging level:3 Info:3
+2022-09-19 22:49:31.267491	FATAL	test.unit_tests.modules.test_logging	Logging level:4 Fatal:0
+2022-09-19 22:49:31.268147	ERROR	test.unit_tests.modules.test_logging	Logging level:4 Error:1
+2022-09-19 22:49:31.268693	WARN	test.unit_tests.modules.test_logging	Logging level:4 Warn:2
+2022-09-19 22:49:31.269356	INFO	test.unit_tests.modules.test_logging	Logging level:4 Info:3
+2022-09-19 22:49:31.269769	DEBUG	test.unit_tests.modules.test_logging	Logging level:4 Debug:4
+2022-09-19 22:49:31.270149	FATAL	test.unit_tests.modules.test_logging	Line 1
+2022-09-19 22:49:31.270149	FATAL	test.unit_tests.modules.test_logging	Line 2
+2022-09-19 22:49:31.270149	FATAL	test.unit_tests.modules.test_logging	Line 3

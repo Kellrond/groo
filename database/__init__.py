@@ -1,16 +1,24 @@
 import  psycopg2
-
-import config
+import  config
 
 class Db:
     ''' Database class that handles connection to the database '''
     def __init__(self) -> None:
-        self.host     = config.db.host
-        self.user     = config.db.user
-        self.password = config.db.password
-        self.dbname   = config.db.dbname
-        self.port     = config.db.port
+        self.config   = config.db
         self.conn     = None
+        # self.host     = config.db.host
+        # self.user     = config.db.user
+        # self.password = config.db.password
+        # self.dbname   = config.db.dbname
+        # self.port     = config.db.port
+
+    @classmethod
+    def from_test_conf(cls, config):
+        ''' Instantiates a class using the test configuration passed in. '''
+        temp_class = cls()
+        temp_class.config = config
+        return temp_class
+
 
     def commit(self):
         ''' Commit the last set of statements to the database '''
@@ -21,11 +29,11 @@ class Db:
         if self.conn is None:
             try:
                 self.conn = psycopg2.connect(
-                    host=self.host,
-                    user=self.user,
-                    password=self.password,
-                    port=self.port,
-                    dbname=self.dbname
+                    host=self.config.host,
+                    user=self.config.user,
+                    password=self.config.password,
+                    port=self.config.port,
+                    dbname=self.config.dbname
                 )
             except psycopg2.DatabaseError as e:
                 raise e          
@@ -132,5 +140,3 @@ class Db:
         self.connect()
         with self.conn.cursor() as cursor:
             cursor.execute(sql, values)  
-
-db = Db()
