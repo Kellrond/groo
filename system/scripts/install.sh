@@ -141,21 +141,16 @@ HERE
 
 echo "python: create virtual environment (venv)"
 ####
-cd /home/$piUserName/$REPO_NAME/
+cd $INSTALL_DIR/$REPO_NAME/
 python3 -m venv venv
 
 echo "python: install dependancies in venv"
 ####
-/home/$piUserName/$REPO_NAME/venv/bin/python3 -m pip install -q -r /home/$piUserName/$REPO_NAME/documentation/python_pip.txt
+$INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r /home/$piUserName/$REPO_NAME/documentation/python_pip.txt
 
 echo "database: build empty database from schema"
 ####
-/home/$piUserName/$REPO_NAME/venv/bin/python3 /home/$piUserName/$REPO_NAME/database/initialize_db.py
-
-
-echo "linux: permissions on repo"
-####
-chown $piUserName:$piUserName -R /home/$piUserName/$REPO_NAME
+$INSTALL_DIR/$REPO_NAME/venv/bin/python3 /home/$piUserName/$REPO_NAME/database/initialize_db.py
 
 duration=($SECONDS - $t_start)
 echo " Setup completed in $duration seconds"
