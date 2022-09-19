@@ -94,7 +94,7 @@ t_start=$SECONDS
 echo "linux: set folder permissions"
 ####
 chown $piUserName:$piUserName -R $INSTALL_DIR/$REPO_NAME
-chmod 755 -R $INSTALL_DIR/$REPO_NAME
+chmod 777 -R $INSTALL_DIR/$REPO_NAME
 
 echo "git: user.name, user.email and cedential.helper"
 ####
