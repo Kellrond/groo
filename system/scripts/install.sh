@@ -136,7 +136,7 @@ service postgresql restart
 echo "postgres: create database"
 ####
 su - postgres <<HERE
-PGOPTIONS='--client-min-messages=warning' psql -X -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d $DB_NAME -f /home/$piUserName/$REPO_NAME/database/scripts/schema.sql
+PGOPTIONS='--client-min-messages=warning' psql -X -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d $DB_NAME -f $INSTALL_DIR/$REPO_NAME/database/scripts/schema.sql
 HERE
 
 echo "python: create virtual environment (venv)"
@@ -146,11 +146,11 @@ python3 -m venv venv
 
 echo "python: install dependancies in venv"
 ####
-$INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r /home/$piUserName/$REPO_NAME/documentation/python_pip.txt
+$INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r $INSTALL_DIR/$REPO_NAME/documentation/python_pip.txt
 
 echo "database: build empty database from schema"
 ####
-$INSTALL_DIR/$REPO_NAME/venv/bin/python3 /home/$piUserName/$REPO_NAME/database/initialize_db.py
+$INSTALL_DIR/$REPO_NAME/venv/bin/python3 $INSTALL_DIR/$REPO_NAME/database/initialize_db.py
 
 duration=($SECONDS - $t_start)
 echo " Setup completed in $duration seconds"
