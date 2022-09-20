@@ -13,7 +13,11 @@ class TestLogging(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        # Glob and delete all files in the test_data/logs folder
+        glob_logs = glob.glob(f'{config.logging.log_dir}/*.*')
+        if len(glob_logs) > 0:
+            for log_filepath in glob_logs:
+                os.remove(log_filepath)
 
     def setUp(self):
         self.log = logging.Log.from_test_conf(config.logging)
@@ -60,7 +64,7 @@ class TestLogging(unittest.TestCase):
             # Set the logging level
             self.log.config.database_level = lvl
             self.log.config.flatfile_level = lvl
-            self.log.config.terminal_level = lvl #-1 # We dont want to print to terminal during tests
+            self.log.config.terminal_level = -1 # We dont want to print to terminal during tests
             # Log at every level
             self.log.fatal(f'Logging level:{lvl} Fatal:0', __name__)
             self.log.error(f'Logging level:{lvl} Error:1', __name__)

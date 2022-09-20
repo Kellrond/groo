@@ -4,3 +4,5 @@ from config.db import *
 # password = 'groo'
 dbname = 'test_groo' 
 # port = 5432
+
+test_data_file_apth = 'test/test_data/sql/test_data.sql'

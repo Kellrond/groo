@@ -12,6 +12,10 @@ class Db:
         # self.dbname   = config.db.dbname
         # self.port     = config.db.port
 
+    def __del__(self):
+        # self.conn.close()
+        pass
+
     @classmethod
     def from_test_conf(cls, config):
         ''' Instantiates a class using the test configuration passed in. '''
@@ -26,6 +30,7 @@ class Db:
             self.conn.commit()
 
     def connect(self):
+        ''' If inactive open a connection to the database'''
         if self.conn is None:
             try:
                 self.conn = psycopg2.connect(
@@ -37,6 +42,12 @@ class Db:
                 )
             except psycopg2.DatabaseError as e:
                 raise e          
+
+    def close(self):
+        ''' If active close the database connection '''
+        if self.conn is not None:
+            self.conn.close()
+            self.conn = None
 
     def nextId(self, table):
         primary_keys = self.getPrimaryKeyNamesFromTable(table)
@@ -91,11 +102,13 @@ class Db:
             return records[0] 
 
     # Add or update records, execute statement
-    def execute(self, sql: str) -> bool:
+    def execute(self, sql: str, autoCommit=True) -> bool:
         ''' Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. '''
         self.connect()
         with self.conn.cursor() as cursor:
             cursor.execute(sql)
+        if autoCommit:
+            self.commit()
 
     def add(self, table: str, dbo: dict):
         ''' Add a single new record '''
