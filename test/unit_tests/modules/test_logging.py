@@ -20,10 +20,11 @@ class TestLogging(unittest.TestCase):
                 os.remove(log_filepath)
 
     def setUp(self):
-        self.log = logging.Log.from_test_conf(config.logging)
+        self.log = logging.Log.from_test_conf(config.logging, __name__)
 
     def tearDown(self):
         pass
+    
 
     def test_create_log_files(self):
         # Glob and delete all files in the test_data/logs folder
@@ -66,11 +67,11 @@ class TestLogging(unittest.TestCase):
             self.log.config.flatfile_level = lvl
             self.log.config.terminal_level = -1 # We dont want to print to terminal during tests
             # Log at every level
-            self.log.fatal(f'Logging level:{lvl} Fatal:0', __name__)
-            self.log.error(f'Logging level:{lvl} Error:1', __name__)
-            self.log.warn(f'Logging level:{lvl} Warn:2', __name__)
-            self.log.info(f'Logging level:{lvl} Info:3', __name__)
-            self.log.debug(f'Logging level:{lvl} Debug:4', __name__)
+            self.log.fatal(f'Logging level:{lvl} Fatal:0')
+            self.log.error(f'Logging level:{lvl} Error:1')
+            self.log.warn(f'Logging level:{lvl} Warn:2')
+            self.log.info(f'Logging level:{lvl} Info:3')
+            self.log.debug(f'Logging level:{lvl} Debug:4')
 
             # Check the log length
             with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
@@ -83,7 +84,7 @@ class TestLogging(unittest.TestCase):
             #
 
         # Check multi-line logs print across multiple lines. 
-        self.log.fatal('Line 1\nLine 2\nLine 3', __name__)
+        self.log.fatal('Line 1  \nLine 2  \nLine 3')
         with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
             lines = file.readlines()
             log_lines = len(lines)

@@ -5,4 +5,4 @@ database_level = 1
 flatfile_level = 5
 
 # Location of gro.log and any other log flat files
-log_dir = "logs/"
+log_dir = "logs"

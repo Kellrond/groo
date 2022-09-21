@@ -1,20 +1,19 @@
-import  psycopg2
 import  config
+from    modules import logging
+# External dependencies
+import  psycopg2
+
+log = logging.Log(__name__)
 
 class Db:
     ''' Database class that handles connection to the database '''
     def __init__(self) -> None:
         self.config   = config.db
         self.conn     = None
-        # self.host     = config.db.host
-        # self.user     = config.db.user
-        # self.password = config.db.password
-        # self.dbname   = config.db.dbname
-        # self.port     = config.db.port
 
     def __del__(self):
-        # self.conn.close()
-        pass
+        if self.conn is not None:
+            self.conn.close()
 
     @classmethod
     def from_test_conf(cls, config):
@@ -23,14 +22,15 @@ class Db:
         temp_class.config = config
         return temp_class
 
-
+    # Connection controls
     def commit(self):
         ''' Commit the last set of statements to the database '''
         if self.conn is not None:
+            log.error('COMIT')
             self.conn.commit()
 
     def connect(self):
-        ''' If inactive open a connection to the database'''
+        ''' If inactive open a connection to the database '''
         if self.conn is None:
             try:
                 self.conn = psycopg2.connect(
@@ -48,6 +48,31 @@ class Db:
         if self.conn is not None:
             self.conn.close()
             self.conn = None
+
+    # Table functions
+    
+    def createTable(self, table: dict, drop_if_exists=False) -> None:
+        ''' Create a table from the dictionary passed in 
+        
+            The dictionary must contain the key value pair of
+            `'__table_name__': 'example_name'`
+
+            The rest of the items in the dictionary should be in key value pairs. 
+
+            Usage:
+                `dict = { 
+                    '__table_name__': 'example_name',
+                    'id': 'SERIAL PRIMARY KEY',
+                    'col1': INTEGER,
+                    'col2': TEXT  
+                }
+                db.createTable(dict)
+                `
+
+            Params:
+                - table: the dictionary as desccribed above 
+
+        '''     
 
     def nextId(self, table):
         primary_keys = self.getPrimaryKeyNamesFromTable(table)
