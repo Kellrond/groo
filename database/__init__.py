@@ -26,7 +26,7 @@ class Db:
     def commit(self):
         ''' Commit the last set of statements to the database '''
         if self.conn is not None:
-            log.debug('DB commit')
+            log.debug('DB transaction committed')
             self.conn.commit()
 
     def connect(self):
@@ -34,7 +34,7 @@ class Db:
         if self.conn is None:
             try:
                 self.conn = psycopg2.connect(
-                    host=self.config.host3,
+                    host=self.config.host,
                     user=self.config.user,
                     password=self.config.password,
                     port=self.config.port,
@@ -72,7 +72,7 @@ class Db:
                 `
 
             Params:
-                - table: the dictionary as desccribed above 
+                - table: the dictionary as described above 
                 - drop_if_exists: drops an existing table. False by default to prevent 
                   accidental data loss
         '''
@@ -93,8 +93,8 @@ class Db:
             if table_name in results:
                 return
 
+        # Build the create table statement
         sql = f'CREATE TABLE {table_name} ( '
-
         for column_name,meta in table.items():
             sql += f' {column_name} {meta},'
         
@@ -163,19 +163,55 @@ class Db:
         if autoCommit:
             self.commit()
 
-    def add(self, table: str, dbo: dict):
-        ''' Add a single new record '''
-        columns = ", ".join(dbo.keys())
-        placeholders = ", ".join([ '%s' for x in dbo.values() ])  
-        values = tuple(dbo.values())
+    def add(self, data: dict or list, single_transaction=True):
+        ''' Add one or many row. Rows are inserted individually so in a list of
+            records you may insert to multiple rows at a time. 
 
-        sql = f'''
-            INSERT INTO { table } ({ columns })
-            VALUES ({ placeholders })
+            Security note:
+                Using `add()` will avoid SQL injection attacks due to the parameterization of the input values.
+                If you are exposing this to the internet, you should always consider injection attacks. Taking 
+                a reading from a sensor and writing that value directly to an insert statement is not dangerous.
+                But you should think twice if dealing with anything with human input.  
+
+            Params:
+                - data: either a dict or a list of dicts. DICTIONARIES MUST HAVE '__table_name__': 'table_name'
+                - single_transaction: when left at the True default, commits at the end of all the inserts
+                  this is to help ensure data integrity. If keeping all data at all cost is your preference 
+                  set this to False.       
         '''
-        self.connect()
-        with self.conn.cursor() as cursor:
-            cursor.execute(sql, values)        
+        if type(data) == dict:
+            data =[data]
+
+        for row in data:
+            table_name = ''     
+            if row.get('__table_name__'):
+                table_name = row.pop('__table_name__')
+            else:
+                raise Exception('Create table dict requires "__table_name__"')        
+            columns = ", ".join(row.keys())
+            placeholders = ", ".join([ '%s' for x in row.values() ])  
+            values = tuple(row.values())
+
+            sql = f'''
+                INSERT INTO { table_name } ({ columns })
+                VALUES ({ placeholders })
+            '''
+            self.connect()
+            try:
+                with self.conn.cursor() as cursor:
+                    cursor.execute(sql, values)  
+                if not single_transaction:
+                    self.commit()
+                log.debug(f'Db.add() inserted row in {table_name}')
+            except Exception as e:
+                log.error(f'Db.add() failed to add data to table {table_name}')
+                log.error(traceback.format_exc())
+                self.close()
+                raise e
+
+        if single_transaction: 
+            self.commit()   
+        log.info(f'Db.add() {len(data)} row(s) to database')  
 
     def upsert(self, table: str, dbo: dict):
         ''' Insert or updates a record as necessary 

@@ -1,8 +1,7 @@
 drop table if exists test_data;
 create table test_data
 (
-	test_id integer not null constraint test_data_pk
-			primary key,
+	test_id         SERIAL PRIMARY KEY,
     test_bigint     bigint,
     test_bool       boolean,
     test_bytea      bytea,

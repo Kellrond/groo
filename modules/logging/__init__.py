@@ -105,10 +105,9 @@ class Log():
         return sum(x) > 0
 
     def init_logs(self) -> None:
-        ''' Check if the log files exist and create if they don't exist '''
+        ''' Ensure that the required folders and files are in place to start logging '''
         if self.__check_for_log_folder() == False:
             os.makedirs(self.config.log_dir)
-
         # Appending will create a file if there is none
         for file in self.log_files:
             with open(f'{self.config.log_dir}/{file}', 'a'):
