@@ -1,7 +1,7 @@
 import  config
 from    modules import logging
 # External dependencies
-import  psycopg2
+import  psycopg2, traceback
 
 log = logging.Log(__name__)
 
@@ -26,7 +26,7 @@ class Db:
     def commit(self):
         ''' Commit the last set of statements to the database '''
         if self.conn is not None:
-            log.error('COMIT')
+            log.debug('DB commit')
             self.conn.commit()
 
     def connect(self):
@@ -34,14 +34,16 @@ class Db:
         if self.conn is None:
             try:
                 self.conn = psycopg2.connect(
-                    host=self.config.host,
+                    host=self.config.host3,
                     user=self.config.user,
                     password=self.config.password,
                     port=self.config.port,
                     dbname=self.config.dbname
                 )
-            except psycopg2.DatabaseError as e:
-                raise e          
+                log.debug('DB connected')       
+            except Exception as e:
+                log.error(traceback.format_exc())
+                raise e
 
     def close(self):
         ''' If active close the database connection '''
@@ -71,8 +73,34 @@ class Db:
 
             Params:
                 - table: the dictionary as desccribed above 
+                - drop_if_exists: drops an existing table. False by default to prevent 
+                  accidental data loss
+        '''
+        table_name = ''     
+        if table.get('__table_name__'):
+            table_name = table.pop('__table_name__')
+        else:
+            raise Exception('Create table dict requires "__table_name__"')
 
-        '''     
+        if drop_if_exists:
+            sql = f"DROP TABLE IF EXISTS {table_name};"
+            self.execute(sql)
+        else:
+            # If not dropping table check if table exists and leave if it exists
+            sql = f"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+            results = self.query(sql)
+            results = [v.get('table_name') for v in results]
+            if table_name in results:
+                return
+
+        sql = f'CREATE TABLE {table_name} ( '
+
+        for column_name,meta in table.items():
+            sql += f' {column_name} {meta},'
+        
+        # Remove the trailing comma or postgres throws error
+        sql = sql[:-1] + ');'
+        self.execute(sql)
 
     def nextId(self, table):
         primary_keys = self.getPrimaryKeyNamesFromTable(table)

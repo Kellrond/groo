@@ -46,12 +46,21 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(self.db.conn, None, "Database connection failed to close")
 
     def test_create_table(self):
-        # First drop the table if it exists
-        sql = 'DROP TABLE IF EXISTS test_table;'
-        self.db.execute(sql)
-        self.db.close()
+        def drop_test_table():
+            sql = 'DROP TABLE IF EXISTS test_table;'
+            self.db.execute(sql)
+            self.db.close()
 
-        # Test selecting from a non existant table
+        # Test that you can query the new table
+        def query_len_test_table() -> int:      
+            sql = 'SELECT * FROM test_table;'
+            result = self.db.query(sql)
+            return len(result)
+
+        # First drop the table if it exists
+        drop_test_table()
+
+        # Test selecting from a non existent table
         sql = 'SELECT * FROM test_table'
         with self.assertRaises(UndefinedTable):
             _ = self.db.query(sql)
@@ -69,11 +78,21 @@ class TestDatabase(unittest.TestCase):
         self.db.execute(sql)
 
         # Test that you can query the new table
-        sql = 'SELECT * FROM test_table'
-        result = self.db.query(sql)
-        self.assertEqual(len(result), 0, "Results for querying empty table don't match expectations of nothing")
+        result = query_len_test_table()
+        self.assertEqual(result, 0, "Results for querying empty table don't match expectations of nothing")
+        drop_test_table()
 
-        # Create the table via a dictionary
+        # Tests creating the table via a dictionary
+
+        # No tablename in the dictionary should raise an exception
+        no_tablename = {
+            'id': 'SERIAL PRIMARY KEY',
+            'test': 'TEXT'
+        }
+        with self.assertRaises(Exception):
+            self.db.createTable(no_tablename)
+        self.db.close()
+
         table_dict = {
             '__table_name__': 'test_table',
             'id': 'SERIAL PRIMARY KEY',
@@ -81,5 +100,28 @@ class TestDatabase(unittest.TestCase):
             'int_numb': 'INTEGER',
             'real_numb': 'REAL'
         }
+        self.db.createTable(table_dict)
+        result = query_len_test_table()
+        self.assertEqual(result, 0, "Results for querying empty table don't match expectations of nothing")
         
+        # Prep the table to test drop if exists
+        sql = ''' 
+            INSERT INTO test_table (txt, int_numb, real_numb)
+            VALUES ('test', 1, 1.5);
+        '''
+        self.db.execute(sql)
+        result = query_len_test_table()
+        self.assertEqual(result, 1, 'Query length does not match expectation')
+
+        table_dict['__table_name__'] = 'test_table'
+        self.db.createTable(table_dict, drop_if_exists=False)
+        result = query_len_test_table()
+        self.assertEqual(result, 1, 'drop_if_exists dropped the new table incorrectly')
+
+        table_dict['__table_name__'] = 'test_table'
+        self.db.createTable(table_dict, drop_if_exists=True)
+        result = query_len_test_table()
+        self.assertEquals(result, 0, 'drop_if_exists did not drop table before creating new table')
+
+       
         

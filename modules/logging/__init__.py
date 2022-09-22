@@ -41,7 +41,7 @@ class Log():
             'level': 0,
             'name': 'FATAL',
             'source': self.src_name,
-            'body': txt,
+            'body': str(txt),
         }
         self.consoleLog(log)
         self.fileLog(log)
@@ -54,7 +54,7 @@ class Log():
             'level': 1,
             'name': 'ERROR',
             'source': self.src_name,
-            'body': txt,
+            'body': str(txt),
         }
         self.consoleLog(log)
         self.fileLog(log)
@@ -66,7 +66,7 @@ class Log():
             'level': 2,
             'name': 'WARN',
             'source': self.src_name,
-            'body': txt,
+            'body': str(txt),
         }
         self.consoleLog(log)
         self.fileLog(log)
@@ -78,7 +78,7 @@ class Log():
             'level': 3,
             'name': 'INFO',
             'source': self.src_name,
-            'body': txt,
+            'body': str(txt),
         }
         self.consoleLog(log)
         self.fileLog(log)
@@ -90,12 +90,10 @@ class Log():
             'level': 4,
             'name': 'DEBUG',
             'source': self.src_name,
-            'body': txt,
+            'body': str(txt),
         }
         self.consoleLog(log)
         self.fileLog(log)
-
-
 
     def __check_for_log_folder(self) -> bool:
         folder_list = glob('**/', recursive=True)
@@ -126,8 +124,9 @@ class Log():
         ''' Outputs the log information to terminal. '''
         if log.get('level') <= self.config.terminal_level:
             log_lines = log.get('body','').split('\n')
-            for line in log_lines: 
-                print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{line}")
+            for line in log_lines:
+                if line != '': 
+                    print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{line}")
  
     def fileLog(self, log: dict): 
         ''' Writes the log to flat file '''
