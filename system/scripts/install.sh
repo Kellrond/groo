@@ -43,10 +43,10 @@ gitCred="store"
 
 # Do not change these variables unless the related login the the code base is changed as well
 INSTALL_DIR="/srv"
-SQL_USER="groo"
-SQL_PASS="groo"
-DB_NAME="groo"
-REPO_NAME="groo"
+SQL_USER="grow"
+SQL_PASS="grow"
+DB_NAME="grow"
+REPO_NAME="grow"
 
 # Start the total duration timer
 START_TIME=$SECONDS
