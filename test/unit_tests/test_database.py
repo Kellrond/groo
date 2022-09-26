@@ -58,7 +58,6 @@ class TestDatabase(unittest.TestCase):
         self.db.close()
         self.assertEqual(self.db.conn, None, "Database connection failed to close")
 
-
     def test_create_table(self):
         # First drop the table if it exists
         self.drop_test_table()
@@ -125,7 +124,6 @@ class TestDatabase(unittest.TestCase):
         self.db.createTable(table_dict, drop_if_exists=True)
         result = self.query_len_test_table()
         self.assertEqual(result, 0, 'drop_if_exists did not drop table before creating new table')
-
        
     def test_insert(self):
         # Drop and insert a test table 
@@ -209,3 +207,34 @@ class TestDatabase(unittest.TestCase):
             }
         self.db.add(insert_dict)
         self.assertEqual(self.query_len_test_table(),1,"Db.add() method failed insert")
+
+    def test_next_id(self):
+        # Create an auto-incrementing table and test that it returns None
+        table_dict = {
+            '__table_name__': 'test_table',
+            'id': 'SERIAL PRIMARY KEY',
+            'txt': 'TEXT'
+        }
+        self.db.createTable(table_dict, drop_if_exists=True)
+        result = self.query_len_test_table()
+        self.assertEqual(result, 0, "There should be no records in the Db")
+
+        next_id = self.db.nextId('test_table')
+        self.assertEqual(next_id, None, 'Primary key is auto-incrementing or serial. Should not return next id')
+
+        # Create and prime the table for the test
+        table_dict = {
+            '__table_name__': 'test_table',
+            'id': 'INTEGER PRIMARY KEY',
+            'txt': 'TEXT'
+        }
+        self.db.createTable(table_dict, drop_if_exists=True)
+        next_id = self.db.nextId('test_table')
+        self.assertEqual(next_id, 1, 'No records in Db, next_id should be 1')
+
+        self.db.add({'__table_name__': 'test_table','id':1, 'txt': 'test'})
+        result = self.query_len_test_table()
+        self.assertEqual(result, 1, "There should be a record in the Db")
+
+        next_id = self.db.nextId('test_table')
+        self.assertEqual(next_id,2,'With 1 record in the Db the next id should be 2')

@@ -10,25 +10,24 @@ if [ "$EUID" -ne 0 ]
 fi
 
 clear
- 
-echo "                                                                              "
-echo "                                    ▄▄                                    ▄▄  "
-echo "   ▄▄█▀▀▀█▄█                      ▀███                        ▀███▀▀▀██▄  ██  "
-echo " ▄██▀     ▀█                        ██                          ██   ▀██▄     "
-echo " ██▀       ▀ ▄█▀██▄ ▀███▄███   ▄█▀▀███   ▄▄█▀██▀████████▄       ██   ▄██▀███  "
-echo " ██         ██   ██   ██▀ ▀▀ ▄██    ██  ▄█▀   ██ ██    ██       ███████   ██  "
-echo " ██▄    ▀████▄█████   ██     ███    ██  ██▀▀▀▀▀▀ ██    ██       ██        ██  "
-echo " ▀██▄     ████   ██   ██     ▀██    ██  ██▄    ▄ ██    ██       ██        ██  "
-echo "   ▀▀███████▀████▀██▄████▄    ▀████▀███▄ ▀█████▀████  ████▄   ▄████▄    ▄████▄"
-echo "                                                                              "
-echo "_______________________________________________________________________________"
+
+echo ""
+echo "     █▒▒▒▒    █▒▒▒▒▒▒▒         █▒▒▒▒      █▒▒        █▒▒ "
+echo "   █▒    █▒▒  █▒▒    █▒▒     █▒▒    █▒▒   █▒▒        █▒▒ "
+echo "  █▒▒         █▒▒    █▒▒   █▒▒        █▒▒ █▒▒   █▒   █▒▒ "
+echo "  █▒▒         █▒ █▒▒       █▒▒        █▒▒ █▒▒  █▒▒   █▒▒ "
+echo "  █▒▒   █▒▒▒▒ █▒▒  █▒▒     █▒▒        █▒▒ █▒▒ █▒ █▒▒ █▒▒ "
+echo "   █▒▒    █▒  █▒▒    █▒▒     █▒▒     █▒▒  █▒ █▒    █▒▒▒▒ "
+echo "    █▒▒▒▒▒    █▒▒      █▒▒     █▒▒▒▒      █▒▒        █▒▒ "
+echo "                                                         "
+echo "_________________________________________________________"
 echo ""
 echo " This script will set up the Raspberry Pi with any dependencies required "
 echo ""
 echo " Please note that the system is developed for a Raspberry Pi 4 and has not"
 echo " Been tested with other Pi systems yet. "
 echo ""
-echo " "
+echo ""
 
 # Install script customization
 piUserName="jpk"
@@ -166,6 +165,24 @@ python3 -m venv venv
 echo "python: install dependancies in venv"
 ####
 $INSTALL_DIR/$REPO_NAME/venv/bin/python3 -m pip install -q -r $INSTALL_DIR/$REPO_NAME/config/python_requirements.txt
+
+echo "ufw: allow ports"
+#### 
+ufw allow 22 > /dev/null   # ssh
+ufw allow 5000 > /dev/null # flask dev server
+ufw allow 5432 > /dev/null # postgres
+
+echo "ufw: enable firewall"
+####
+ufw enable
+
+
+## DDclient - Dynamic dns
+echo "ddclient: setup account"
+ddns_pass="9f0574acbbab4e3eafe92b41968078a7"
+ddns_subdomains="@"
+echo -e "daemon=600\nuse=web, web=dynamicdns.park-your-domain.com/getip\nprotocol=namecheap\nserver=dynamicdns.park-your-domain.com\nlogin=$fqdn\npassword=$ddns_pass\n$ddns_subdomains" > /etc/ddclient.conf
+
 
 duration=($SECONDS - $t_start)
 echo " Setup completed in $duration seconds"

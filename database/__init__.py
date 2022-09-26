@@ -6,12 +6,32 @@ import  psycopg2, traceback
 log = logging.Log(__name__)
 
 class Db:
-    ''' Database class that handles connection to the database '''
+    ''' Database class that handles connection to the database. Much of this is
+        a wrapper around psycopg2 so some methods are just mirroring 
+        
+        By default commits occur after every method call where needed. We want to 
+        capture as much data as we can. A bad output from one function or sensor 
+        should not prevent other data from being written. Transactions should be 
+        as small as possible.
+
+        conn:
+            connection to the database. Or more accurately a connection to psycopg2
+            This abstraction exists to make switching to another database vendor a 
+            little easier. 
+
+            `conn == None` is the tell that there is no connection to the database.
+            That is not how to close a connection. Please use the close() method.
+
+    '''
     def __init__(self) -> None:
-        self.config   = config.db
-        self.conn     = None
+        self.config = config.db
+        self.conn = None
+        log.debug('Class instantiated')
 
     def __del__(self):
+        ''' If the object is deleted via `del db` close the connection to avoid 
+            leftover database connections. 
+        '''
         if self.conn is not None:
             self.conn.close()
 
@@ -20,14 +40,15 @@ class Db:
         ''' Instantiates a class using the test configuration passed in. '''
         temp_class = cls()
         temp_class.config = config
+        log.debug('Test class instantiated')
         return temp_class
 
     # Connection controls
     def commit(self):
         ''' Commit the last set of statements to the database '''
         if self.conn is not None:
-            log.debug('DB transaction committed')
             self.conn.commit()
+            log.debug('Transaction committed')
 
     def connect(self):
         ''' If inactive open a connection to the database '''
@@ -40,7 +61,7 @@ class Db:
                     port=self.config.port,
                     dbname=self.config.dbname
                 )
-                log.debug('DB connected')       
+                log.debug('Connected')       
             except Exception as e:
                 log.error(traceback.format_exc())
                 raise e
@@ -50,6 +71,7 @@ class Db:
         if self.conn is not None:
             self.conn.close()
             self.conn = None
+            log.debug('Connection closed')
 
     # Table functions
     
@@ -101,28 +123,63 @@ class Db:
         # Remove the trailing comma or postgres throws error
         sql = sql[:-1] + ');'
         self.execute(sql)
+        log.info(f'Table { table_name } created')
 
-    def nextId(self, table):
-        primary_keys = self.getPrimaryKeyNamesFromTable(table)
+    def nextId(self, table_name: str): 
+        ''' Get the next id in a sequence. Be aware of table with serial or
+            auto-incrementing primary keys. They do not get passed keys as they generate
+            their own.  
+
+            Returns None if passed a table with multiple primary keys, a serialized key,
+            or the table does not exist.
+
+            Params:
+                - table_name: just pass in the table name and the rest will get discovered
+        '''
+
+        primary_keys = self.getPrimaryKeyNamesFromTable(table_name)
+        
+        # Check for serialized and return non if found
+        if sum([1 for pk in primary_keys if pk.get('autoInc') == True]) > 0:
+            return None
+
+        # If there is more than one key, it's a composite and the key is likely put together 
+        # from two other primary keys 
         if len(primary_keys) == 1:
-            sql = f'SELECT MAX({ primary_keys[0] }) FROM { table }'
+            sql = f'SELECT MAX({ primary_keys[0].get("col_name") }) FROM { table_name }'
             max_id = self.scalar(sql)
+            # If no records exist then return 1 as the starting id
+            if max_id == None:
+                return 1
             return max_id + 1
 
-    def getPrimaryKeyNamesFromTable(self, table: str) -> list:
+    def getPrimaryKeyNamesFromTable(self, table_name: str) -> list:
+        ''' The primary keys a good details to have when working with a table
+        
+            Params:
+                - table_name: just the name of a table
+        '''
         self.connect()
         # Find the primary keys of the table
         sql = f'''
-            SELECT c.column_name, c.data_type
+            SELECT c.column_name, c.data_type, c.column_default
             FROM information_schema.table_constraints tc 
             JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name) 
             JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
             AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
-            WHERE constraint_type = 'PRIMARY KEY' and tc.table_name = '{ table }';
+            WHERE constraint_type = 'PRIMARY KEY' and tc.table_name = '{ table_name }';
             '''
-        with self.conn.cursor() as cursor:
-            cursor.execute(sql)
-            primary_keys = [ row[0] for row in cursor.fetchall() ]
+        result = self.query(sql)
+
+        primary_keys = []
+        for pk in result:
+            auto_inc_key = str(pk.get('column_default','')).find(table_name) != -1 
+            primary_keys.append({
+                'col_name': pk.get('column_name'),
+                'data_type': pk.get('data_type'),
+                'autoInc': auto_inc_key
+            })
+            
         return primary_keys
 
     # Queries with a return

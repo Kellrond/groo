@@ -24,7 +24,6 @@ class TestLogging(unittest.TestCase):
 
     def tearDown(self):
         pass
-    
 
     def test_create_log_files(self):
         # Glob and delete all files in the test_data/logs folder
