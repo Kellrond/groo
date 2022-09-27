@@ -89,3 +89,5 @@ class TestLogging(unittest.TestCase):
             log_lines = len(lines)
         self.assertEqual(log_lines - prev_log_lines, 3, f"Lines written in log file do not match logging level { lvl }")            
         self.assertGreaterEqual(len(lines[-1]), 25, "Multi-line logs do not have log meta data on new lines")
+
+        

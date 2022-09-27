@@ -1,9 +1,7 @@
 -- Documentation Tables
 create table if not exists doc_classes
 (
-	class_id integer not null
-		constraint doc_classes_pk
-			primary key,
+	class_id serial primary key,
 	file_id integer,
 	name text,
 	superclass text,
@@ -23,9 +21,7 @@ create table doc_dependencies
 
 create table doc_files
 (
-	file_id integer not null
-		constraint doc_files_pk
-			primary key,
+	file_id serial primary key,
 	folder_id integer,
 	name text,
 	file_path text,
@@ -68,8 +64,7 @@ create table doc_routes
 
 create table logs
 (
-	log_id integer not null constraint logs_pk
-			primary key,
+	log_id serial primary key,
 	timestamp timestamp,
 	level integer,
 	module text,

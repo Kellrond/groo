@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: package modules.logging</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="modules.html"><font color="#ffffff">modules</font></a>.logging</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/srv/grow/modules/logging/__init__.py">/srv/grow/modules/logging/__init__.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="modules.logging.html#Log">Log</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Log">class <strong>Log</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Log">Log</a>(src_name:&nbsp;str)&nbsp;-&amp;gt;&nbsp;None<br>
+&nbsp;<br>
+Handles&nbsp;logging&nbsp;throughout&nbsp;the&nbsp;app<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Log-__init__"><strong>__init__</strong></a>(self, src_name: str) -&gt; None</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="Log-consoleLog"><strong>consoleLog</strong></a>(self, log: dict)</dt><dd><tt>Outputs&nbsp;the&nbsp;log&nbsp;information&nbsp;to&nbsp;terminal.</tt></dd></dl>
+
+<dl><dt><a name="Log-dbLog"><strong>dbLog</strong></a>(self, log: dict)</dt><dd><tt>Writes&nbsp;the&nbsp;log&nbsp;to&nbsp;the&nbsp;database</tt></dd></dl>
+
+<dl><dt><a name="Log-debug"><strong>debug</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;4</tt></dd></dl>
+
+<dl><dt><a name="Log-delete_dot_logs"><strong>delete_dot_logs</strong></a>(self) -&gt; None</dt><dd><tt>Remove&nbsp;all&nbsp;.log&nbsp;files&nbsp;created</tt></dd></dl>
+
+<dl><dt><a name="Log-error"><strong>error</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;1</tt></dd></dl>
+
+<dl><dt><a name="Log-fatal"><strong>fatal</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;0</tt></dd></dl>
+
+<dl><dt><a name="Log-fileLog"><strong>fileLog</strong></a>(self, log: dict)</dt><dd><tt>Writes&nbsp;the&nbsp;log&nbsp;to&nbsp;flat&nbsp;file</tt></dd></dl>
+
+<dl><dt><a name="Log-info"><strong>info</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;3</tt></dd></dl>
+
+<dl><dt><a name="Log-init_logs"><strong>init_logs</strong></a>(self) -&gt; None</dt><dd><tt>Ensure&nbsp;that&nbsp;the&nbsp;required&nbsp;folders&nbsp;and&nbsp;files&nbsp;are&nbsp;in&nbsp;place&nbsp;to&nbsp;start&nbsp;logging</tt></dd></dl>
+
+<dl><dt><a name="Log-verbose"><strong>verbose</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;5</tt></dd></dl>
+
+<dl><dt><a name="Log-warn"><strong>warn</strong></a>(self, txt: str) -&gt; None</dt><dd><tt><a href="#Log">Log</a>&nbsp;level:&nbsp;2</tt></dd></dl>
+
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="Log-from_test_conf"><strong>from_test_conf</strong></a>(config, src_name: str)<font color="#909090"><font face="helvetica, arial"> from <a href="builtins.html#type">builtins.type</a></font></font></dt><dd><tt>Instantiates&nbsp;a&nbsp;class&nbsp;using&nbsp;the&nbsp;test&nbsp;configuration&nbsp;passed&nbsp;in.&nbsp;<br>
+&nbsp;<br>
+Params:&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;config:&nbsp;a&nbsp;config&nbsp;file&nbsp;loaded&nbsp;from&nbsp;the&nbsp;test/config&nbsp;dir&nbsp;or&nbsp;otherise<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;src_name:&nbsp;__name__.&nbsp;Use&nbsp;that&nbsp;every&nbsp;time.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>log_files</strong> = ['grow.log']</dl>
+
+<dl><dt><strong>log_files_exist</strong> = False</dl>
+
+</td></tr></table></td></tr></table>
+</body></html>

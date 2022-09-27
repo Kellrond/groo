@@ -1,14 +1,16 @@
-import  config 
+import  config, database
 # External dependancies
 import  datetime as dt
 from    glob import glob
 import  os
 
+
+
 class Log():
     ''' Handles logging throughout the app
     '''
 
-    log_files = ['groo.log']
+    log_files = ['grow.log']
     log_files_exist = False
 
     def __init__(self, src_name: str) -> None:
@@ -40,10 +42,11 @@ class Log():
             'timestamp': dt.datetime.now(),
             'level': 0,
             'name': 'FATAL',
-            'source': self.src_name,
-            'body': str(txt),
+            'module': self.src_name,
+            'log': str(txt),
         }
         self.consoleLog(log)
+        self.dbLog(log)
         self.fileLog(log)
         
 
@@ -53,10 +56,11 @@ class Log():
             'timestamp': dt.datetime.now(),
             'level': 1,
             'name': 'ERROR',
-            'source': self.src_name,
-            'body': str(txt),
+            'module': self.src_name,
+            'log': str(txt),
         }
         self.consoleLog(log)
+        self.dbLog(log)
         self.fileLog(log)
 
     def warn(self, txt: str) -> None:
@@ -65,10 +69,11 @@ class Log():
             'timestamp': dt.datetime.now(),
             'level': 2,
             'name': 'WARN',
-            'source': self.src_name,
-            'body': str(txt),
+            'module': self.src_name,
+            'log': str(txt),
         }
         self.consoleLog(log)
+        self.dbLog(log)
         self.fileLog(log)
 
     def info(self, txt: str) -> None:
@@ -77,10 +82,11 @@ class Log():
             'timestamp': dt.datetime.now(),
             'level': 3,
             'name': 'INFO',
-            'source': self.src_name,
-            'body': str(txt),
+            'module': self.src_name,
+            'log': str(txt),
         }
         self.consoleLog(log)
+        self.dbLog(log)
         self.fileLog(log)
 
     def debug(self, txt: str) -> None:
@@ -89,11 +95,25 @@ class Log():
             'timestamp': dt.datetime.now(),
             'level': 4,
             'name': 'DEBUG',
-            'source': self.src_name,
-            'body': str(txt),
+            'module': self.src_name,
+            'log': str(txt),
         }
         self.consoleLog(log)
+        self.dbLog(log)
         self.fileLog(log)
+
+    def verbose(self, txt: str) -> None:
+        ''' Log level: 5 '''
+        log = {
+            'timestamp': dt.datetime.now(),
+            'level': 5,
+            'name': 'VERBOSE',
+            'module': self.src_name,
+            'log': str(txt),
+        }
+        self.consoleLog(log)
+        self.dbLog(log)
+        self.fileLog(log)        
 
     def __check_for_log_folder(self) -> bool:
         folder_list = glob('**/', recursive=True)
@@ -121,16 +141,43 @@ class Log():
     # Output logs
     def consoleLog(self, log: dict):
         ''' Outputs the log information to terminal. '''
-        if log.get('level') <= self.config.terminal_level:
-            log_lines = log.get('body','').split('\n')
+        if log.get('level') <= self.config.terminal_level or log.get('level') <= 1:
+            log_lines = log.get('log','').split('\n')
             for line in log_lines:
                 if line != '': 
-                    print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{line}")
+                    print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}")
  
     def fileLog(self, log: dict): 
         ''' Writes the log to flat file '''
         if log.get('level') <= self.config.flatfile_level:
             with open(f'{self.config.log_dir}/groo.log', 'a') as file:
-                log_lines = log.get('body','').split('\n')
+                log_lines = log.get('log','').split('\n')
                 for line in log_lines: 
-                    file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('source')}\t{line}\n")
+                    file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
+
+    def dbLog(self, log: dict): 
+        ''' Writes the log to the database '''
+        if log.get('level') <= self.config.database_level:
+            # Log must be manualy input to avoid a feedback loop of db adds triggering logs which get added to db
+            db = database.Db()
+            db.connect()
+
+            tempLog = { k:v for k, v in log.items() if k != 'name'}
+
+            columns = ", ".join(tempLog.keys())
+            placeholders = ", ".join([ '%s' for x in tempLog.values() ])  
+            values = tuple(tempLog.values())
+
+
+            sql = f'''
+                INSERT INTO logs ({ columns })
+                VALUES ({ placeholders })
+            '''
+
+            try:
+                with db.conn.cursor() as cursor:
+                    cursor.execute(sql, values)        
+                db.conn.close()
+            except Exception as e:
+                db.close()
+                raise e
