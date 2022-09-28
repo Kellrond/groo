@@ -31,9 +31,7 @@ create table doc_files
 
 create table doc_folders
 (
-	folder_id integer not null
-		constraint doc_folders_pk
-			primary key,
+	folder_id serial primary key,
 	parent_id integer,
 	file_path text,
 	name text
@@ -41,9 +39,7 @@ create table doc_folders
 
 create table doc_functions
 (
-	function_id integer not null
-		constraint doc_functions_pk
-			primary key,
+	function_id serial primary key,
 	class_id integer,
 	file_id integer,
 	name text,
