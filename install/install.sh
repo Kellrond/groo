@@ -78,7 +78,7 @@ echo "git: clone repo"
 ####
 su - $linuxUser <<HERE
     cd $INSTALL_DIR
-    git clone --quiet https://github.com/Kellrond/groo.git
+    git clone --quiet https://github.com/Kellrond/grow.git
     git config --global --add safe.directory /srv/$REPO_NAME
 HERE
 
