@@ -4,14 +4,18 @@ from decimal import Decimal
 import unittest
 from psycopg2.errors import UndefinedTable
 
-
 import database
+from modules import logging
 from test import config
 
 class TestDatabase(unittest.TestCase):
     # Setups and teardowns
+
     @classmethod
     def setUpClass(cls):
+        # Turn of logging globally
+        logging.Log.test_mode = True 
+        
         ## The following is if we want to populate a bunch of data on the test_db
         # setup_db = database.Db.from_test_conf(config.db.GrowDb)
         # setup_db.connect()

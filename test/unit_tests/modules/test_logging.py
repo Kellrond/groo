@@ -56,7 +56,7 @@ class TestLogging(unittest.TestCase):
 
     def test_logging(self):
         self.log.init_logs()
-
+        self.log.test_mode = False
         logging_levels = [0, 1, 2, 3, 4]
         log_lines = 0
         prev_log_lines = 0
@@ -89,5 +89,6 @@ class TestLogging(unittest.TestCase):
             log_lines = len(lines)
         self.assertEqual(log_lines - prev_log_lines, 3, f"Lines written in log file do not match logging level { lvl }")            
         self.assertGreaterEqual(len(lines[-1]), 25, "Multi-line logs do not have log meta data on new lines")
-
+        # Turn test mode back on to silence output
+        self.log.test_mode = True
         

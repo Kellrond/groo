@@ -5,10 +5,22 @@ from    glob import glob
 import  os
 
 class Log():
-    ''' Handles logging throughout the app
+    ''' Handles logging throughout the app. There are 6 levels of logging currently
+
+            - 0: Fatal
+            - 1: Error
+            - 2: Warn
+            - 3: Info
+            - 4: Debug
+            - 5: Verbose
+
+        Usage: 
+            `log = logging.Log(__name__)`
     '''
 
     log_files_exist = False
+    # While testing we want to silence logging globally except when testing logging 
+    test_mode = False
 
     def __init__(self, src_name: str) -> None:
         self.src_name = src_name
@@ -30,6 +42,9 @@ class Log():
         '''
         temp_class = cls(src_name)
         temp_class.config = config
+        # Set logger to testing to mute all output 
+        cls.test_mode = True
+        # Make sure the test log file is there
         with open(f'{config.log_dir}/{config.log_file}', 'a'):
             pass 
         return temp_class
@@ -43,10 +58,11 @@ class Log():
             'name': 'FATAL',
             'module': self.src_name,
             'log': str(txt),
-        }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)
+        } 
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)
         
 
     def error(self, txt: str) -> None:
@@ -58,9 +74,10 @@ class Log():
             'module': self.src_name,
             'log': str(txt),
         }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)
 
     def warn(self, txt: str) -> None:
         ''' Log level: 2'''
@@ -71,9 +88,10 @@ class Log():
             'module': self.src_name,
             'log': str(txt),
         }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)
 
     def info(self, txt: str) -> None:
         ''' Log level: 3'''
@@ -84,9 +102,10 @@ class Log():
             'module': self.src_name,
             'log': str(txt),
         }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)
 
     def debug(self, txt: str) -> None:
         ''' Log level: 4'''
@@ -97,9 +116,10 @@ class Log():
             'module': self.src_name,
             'log': str(txt),
         }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)
 
     def verbose(self, txt: str) -> None:
         ''' Log level: 5 '''
@@ -110,9 +130,10 @@ class Log():
             'module': self.src_name,
             'log': str(txt),
         }
-        self.consoleLog(log)
-        self.dbLog(log)
-        self.fileLog(log)        
+        if self.test_mode == False:
+            self.consoleLog(log)
+            self.dbLog(log)
+            self.fileLog(log)   
 
     def __check_for_log_folder(self) -> bool:
         folder_list = glob('**/', recursive=True)
@@ -137,7 +158,7 @@ class Log():
     # Output logs
     def consoleLog(self, log: dict):
         ''' Outputs the log information to terminal. '''
-        if log.get('level') <= self.config.log_terminal_level or log.get('level') <= 1:
+        if log.get('level') <= self.config.log_terminal_level:
             log_lines = log.get('log','').split('\n')
             for line in log_lines:
                 if line != '': 
@@ -154,7 +175,7 @@ class Log():
     def dbLog(self, log: dict): 
         ''' Writes the log to the database '''
         if log.get('level') <= self.config.log_database_level:
-            # Log must be manualy input to avoid a feedback loop of db adds triggering logs which get added to db
+            # Log must be manually input to avoid a feedback loop of db adds triggering logs which get added to db
             db = database.Db()
             db.connect()
 
@@ -164,15 +185,14 @@ class Log():
             placeholders = ", ".join([ '%s' for x in tempLog.values() ])  
             values = tuple(tempLog.values())
 
-
             sql = f'''
                 INSERT INTO logs ({ columns })
                 VALUES ({ placeholders })
             '''
-
             try:
                 with db.conn.cursor() as cursor:
-                    cursor.execute(sql, values)        
+                    cursor.execute(sql, values)    
+                    db.commit()    
                 db.conn.close()
             except Exception as e:
                 db.close()
