@@ -14,13 +14,13 @@ class TestLogging(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Glob and delete all files in the test_data/logs folder
-        glob_logs = glob.glob(f'{config.logging.log_dir}/*.*')
+        glob_logs = glob.glob(f'{config.modules.Logging.log_dir}/*.*')
         if len(glob_logs) > 0:
             for log_filepath in glob_logs:
                 os.remove(log_filepath)
 
     def setUp(self):
-        self.log = logging.Log.from_test_conf(config.logging, __name__)
+        self.log = logging.Log.from_test_conf(config.modules.Logging, __name__)
 
     def tearDown(self):
         pass
@@ -39,7 +39,7 @@ class TestLogging(unittest.TestCase):
         # Create empty log files and check they all got created
         self.log.init_logs()
         glob_logs = glob.glob(f'{self.log.config.log_dir}/*.*')
-        self.assertEqual(len(glob_logs),len(self.log.log_files), "Number of log files does not match log file list of class")
+        self.assertEqual(len(glob_logs),1, "Number of log files does not match log file list of class")
 
     def test_delete_logs(self):
         # Make sure there are log files there to start with
@@ -62,9 +62,9 @@ class TestLogging(unittest.TestCase):
         prev_log_lines = 0
         for lvl in logging_levels:    
             # Set the logging level
-            self.log.config.database_level = lvl
-            self.log.config.flatfile_level = lvl
-            self.log.config.terminal_level = -1 # We dont want to print to terminal during tests
+            self.log.config.log_database_level = lvl
+            self.log.config.log_flatfile_level = lvl
+            self.log.config.log_terminal_level = -1 # We dont want to print to terminal during tests
             # Log at every level
             self.log.fatal(f'Logging level:{lvl} Fatal:0')
             self.log.error(f'Logging level:{lvl} Error:1')
@@ -73,7 +73,7 @@ class TestLogging(unittest.TestCase):
             self.log.debug(f'Logging level:{lvl} Debug:4')
 
             # Check the log length
-            with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
+            with open(f'{self.log.config.log_dir}/grow.log', 'r') as file:
                 log_lines = len(file.readlines())
             self.assertEqual(lvl+1, log_lines - prev_log_lines, f"Lines written in log file do not match logging level { lvl }")
             prev_log_lines = log_lines
@@ -84,7 +84,7 @@ class TestLogging(unittest.TestCase):
 
         # Check multi-line logs print across multiple lines. 
         self.log.fatal('Line 1  \nLine 2  \nLine 3')
-        with open(f'{self.log.config.log_dir}/groo.log', 'r') as file:
+        with open(f'{self.log.config.log_dir}/grow.log', 'r') as file:
             lines = file.readlines()
             log_lines = len(lines)
         self.assertEqual(log_lines - prev_log_lines, 3, f"Lines written in log file do not match logging level { lvl }")            

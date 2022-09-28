@@ -1,10 +1,9 @@
-import datetime, glob, os, sys
+import datetime
 import json
 from decimal import Decimal
 import unittest
-import psycopg2
 from psycopg2.errors import UndefinedTable
-from unittest.mock import patch
+
 
 import database
 from test import config
@@ -13,26 +12,26 @@ class TestDatabase(unittest.TestCase):
     # Setups and teardowns
     @classmethod
     def setUpClass(cls):
-        setup_db = database.Db.from_test_conf(config.db)
-        setup_db.connect()
-        with open(config.db.test_data_file_apth, 'r') as file:
-            sql_statements = file.read().split(';')
-            
+        ## The following is if we want to populate a bunch of data on the test_db
+        # setup_db = database.Db.from_test_conf(config.db.GrowDb)
+        # setup_db.connect()
+        # with open(config.db.test_data_file_path, 'r') as file:
+        #     sql_statements = file.read().split(';')
         # for sql in sql_statements:
         #     if sql != '':
         #         setup_db.execute(sql)
-
-        del setup_db
+        # del setup_db
+        cls.db = database.Db.from_test_conf(config.db.GrowDb)
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        del cls.db
 
     def setUp(self):
-        self.db = database.Db.from_test_conf(config.db)
+        pass
 
     def tearDown(self):
-        del self.db
+        pass
 
     # Helper functions
     def drop_test_table(self):

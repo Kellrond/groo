@@ -1,4 +1,4 @@
-import  config
+import  config.db
 from    modules import logging
 # External dependencies
 import  psycopg2, traceback
@@ -24,9 +24,9 @@ class Db:
 
     '''
     def __init__(self) -> None:
-        self.config = config.db
+        self.config = config.db.GrowDb
         self.conn = None
-        log.debug('Class instantiated')
+        log.verbose('Class instantiated')
 
     def __del__(self):
         ''' If the object is deleted via `del db` close the connection to avoid 

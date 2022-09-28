@@ -4,35 +4,34 @@ import  datetime as dt
 from    glob import glob
 import  os
 
-
-
 class Log():
     ''' Handles logging throughout the app
     '''
 
-    log_files = ['grow.log']
     log_files_exist = False
 
     def __init__(self, src_name: str) -> None:
         self.src_name = src_name
-        self.config = config.logging 
+        self.config = config.modules.Logging
 
-        if not self.log_files_exist:
-            self.log_files_exist = (self.__check_for_log_folder() and self.__check_for_logs())
-            if not self.log_files_exist:
+        if not Log.log_files_exist:
+            Log.log_files_exist = (self.__check_for_log_folder() and self.__check_for_logs())
+            if not Log.log_files_exist:
                 self.init_logs()
-                self.log_files_exist = True
+                Log.log_files_exist = True
         
     @classmethod
     def from_test_conf(cls, config, src_name:str):
         ''' Instantiates a class using the test configuration passed in. 
             
             Params: 
-                - config: a config file loaded from the test/config dir or otherise
+                - config: a config file loaded from the test/config dir or otherwise
                 - src_name: __name__. Use that every time. 
         '''
         temp_class = cls(src_name)
         temp_class.config = config
+        with open(f'{config.log_dir}/{config.log_file}', 'a'):
+            pass 
         return temp_class
 
 
@@ -121,27 +120,24 @@ class Log():
 
     def __check_for_logs(self) -> bool:
         file_list = glob(f'{self.config.log_dir}/**/*.*', recursive=True)
-        x = [ 1 for file in file_list if file in self.log_files]
+        x = [ 1 for file in file_list if file == self.config.log_file ]
         return sum(x) > 0
 
     def init_logs(self) -> None:
         ''' Ensure that the required folders and files are in place to start logging '''
         if self.__check_for_log_folder() == False:
             os.makedirs(self.config.log_dir)
-        # Appending will create a file if there is none
-        for file in self.log_files:
-            with open(f'{self.config.log_dir}/{file}', 'a'):
-                pass 
+        with open(f'{self.config.log_dir}/{self.config.log_file}', 'a'):
+            pass 
         
     def delete_dot_logs(self) -> None:
         ''' Remove all .log files created '''
-        for file_path in self.log_files:
-            os.remove(f'{self.config.log_dir}/{file_path}')
+        os.remove(f'{self.config.log_dir}/{self.config.log_file}')
 
     # Output logs
     def consoleLog(self, log: dict):
         ''' Outputs the log information to terminal. '''
-        if log.get('level') <= self.config.terminal_level or log.get('level') <= 1:
+        if log.get('level') <= self.config.log_terminal_level or log.get('level') <= 1:
             log_lines = log.get('log','').split('\n')
             for line in log_lines:
                 if line != '': 
@@ -149,15 +145,15 @@ class Log():
  
     def fileLog(self, log: dict): 
         ''' Writes the log to flat file '''
-        if log.get('level') <= self.config.flatfile_level:
-            with open(f'{self.config.log_dir}/groo.log', 'a') as file:
+        if log.get('level') <= self.config.log_flatfile_level:
+            with open(f'{self.config.log_dir}/{self.config.log_file}', 'a') as file:
                 log_lines = log.get('log','').split('\n')
                 for line in log_lines: 
                     file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
 
     def dbLog(self, log: dict): 
         ''' Writes the log to the database '''
-        if log.get('level') <= self.config.database_level:
+        if log.get('level') <= self.config.log_database_level:
             # Log must be manualy input to avoid a feedback loop of db adds triggering logs which get added to db
             db = database.Db()
             db.connect()

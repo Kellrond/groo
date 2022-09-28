@@ -1,8 +1,5 @@
-from config.db import *
-# host = 'localhost'
-# user = 'groo'
-# password = 'groo'
-dbname = 'test_grow' 
-# port = 5432
+from config.db import GrowDb
 
-test_data_file_apth = 'test/test_data/sql/test_data.sql'
+GrowDb.dbname = 'test_grow' 
+
+
