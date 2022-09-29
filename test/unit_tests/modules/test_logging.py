@@ -3,18 +3,19 @@ import unittest
 from unittest.mock import patch
 
 import modules.logging as logging
-from test import config
+import database
+from test import t_config
 
 class TestLogging(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.log = logging.Log.from_test_conf(config.modules.Logging, __name__)
+        cls.log = logging.Log.from_test_conf(t_config.modules.Logging, t_config.db.GrowDb, __name__)
 
     @classmethod
     def tearDownClass(cls):
         # Glob and delete all files in the test_data/logs folder
-        glob_logs = glob.glob(f'{config.modules.Logging.log_dir}/*.*')
+        glob_logs = glob.glob(f'{t_config.modules.Logging.log_dir}/*.*')
         if len(glob_logs) > 0:
             for log_filepath in glob_logs:
                 os.remove(log_filepath)
@@ -60,6 +61,12 @@ class TestLogging(unittest.TestCase):
         logging_levels = [0, 1, 2, 3, 4]
         log_lines = 0
         prev_log_lines = 0
+
+        # Create a db object with the test configuration so it's connected to the test database
+        db = database.Db.from_test_conf(t_config.db.GrowDb)
+        drop_sql = 'DELETE FROM logs WHERE 1=1;'
+        db.execute(drop_sql)
+
         for lvl in logging_levels:    
             # Set the logging level
             self.log.config.log_database_level = lvl
@@ -78,9 +85,15 @@ class TestLogging(unittest.TestCase):
             self.assertEqual(lvl+1, log_lines - prev_log_lines, f"Lines written in log file do not match logging level { lvl }")
             prev_log_lines = log_lines
 
-            # Once Database logging is created use that here
-            # 
-            #
+            # Query the database and check for records
+            count_sql = 'SELECT COUNT(*) FROM logs;'
+            count = db.scalar(count_sql)
+            self.assertEqual(lvl + 1, count, f"Records written to database to not match log level { lvl }")
+
+            # Now delete all the rows
+            drop_sql = 'DELETE FROM logs WHERE 1=1;'
+            db.execute(drop_sql)
+
 
         # Check multi-line logs print across multiple lines. 
         self.log.fatal('Line 1  \nLine 2  \nLine 3')

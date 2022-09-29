@@ -6,7 +6,7 @@ from psycopg2.errors import UndefinedTable
 
 import database
 from modules import logging
-from test import config
+from test import t_config
 
 class TestDatabase(unittest.TestCase):
     # Setups and teardowns
@@ -25,7 +25,7 @@ class TestDatabase(unittest.TestCase):
         #     if sql != '':
         #         setup_db.execute(sql)
         # del setup_db
-        cls.db = database.Db.from_test_conf(config.db.GrowDb)
+        cls.db = database.Db.from_test_conf(t_config.db.GrowDb)
 
     @classmethod
     def tearDownClass(cls):

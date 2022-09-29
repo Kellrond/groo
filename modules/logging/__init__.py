@@ -1,8 +1,8 @@
-import  config, database
+import  config
 # External dependancies
 import  datetime as dt
 from    glob import glob
-import  os
+import  os, psycopg2
 
 class Log():
     ''' Handles logging throughout the app. There are 6 levels of logging currently
@@ -13,6 +13,11 @@ class Log():
             - 3: Info
             - 4: Debug
             - 5: Verbose
+
+        There is a database connection in the dbLog method. This is here because the database will
+        create logs when writing and depending on configuration it would be possible to end up in 
+        an endless loop. Python will throw a maximum recursion error before you fill up the storage
+        so it's not going to destroy your machine, but should be left. 
 
         Usage: 
             `log = logging.Log(__name__)`
@@ -25,6 +30,7 @@ class Log():
     def __init__(self, src_name: str) -> None:
         self.src_name = src_name
         self.config = config.modules.Logging
+        self.db_config = config.db.GrowDb
 
         if not Log.log_files_exist:
             Log.log_files_exist = (self.__check_for_log_folder() and self.__check_for_logs())
@@ -33,16 +39,20 @@ class Log():
                 Log.log_files_exist = True
         
     @classmethod
-    def from_test_conf(cls, config, src_name:str):
+    def from_test_conf(cls, config, db_config, src_name:str):
         ''' Instantiates a class using the test configuration passed in. Normal or test instances
             of Log will check for their files at instantiation. 
+
             
             Params: 
                 - config: a config file loaded from the test/config dir or otherwise
+                - db_config: since the logger writes to the db and the db logs, it's better to pass
+                  in a connection config
                 - src_name: __name__. Use that every time. 
         '''
         test_class = cls(src_name)
         test_class.config = config
+        test_class.db_config = db_config
         # Set logger to testing to mute all output 
         cls.test_mode = True
         
@@ -67,9 +77,9 @@ class Log():
             'log': str(txt),
         } 
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)
         
 
     def error(self, txt: str) -> None:
@@ -82,9 +92,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)
 
     def warn(self, txt: str) -> None:
         ''' Log level: 2'''
@@ -96,9 +106,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)
 
     def info(self, txt: str) -> None:
         ''' Log level: 3'''
@@ -110,9 +120,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)
 
     def debug(self, txt: str) -> None:
         ''' Log level: 4'''
@@ -124,9 +134,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)
 
     def verbose(self, txt: str) -> None:
         ''' Log level: 5 '''
@@ -138,9 +148,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.consoleLog(log)
-            self.dbLog(log)
-            self.fileLog(log)   
+            self.__console_write(log)
+            self.__db_write(log)
+            self.__file_write(log)   
 
     def __check_for_log_folder(self) -> bool:
         folder_list = glob('**/', recursive=True)
@@ -163,28 +173,46 @@ class Log():
         os.remove(f'{self.config.log_dir}/{self.config.log_file}')
 
     # Output logs
-    def consoleLog(self, log: dict):
-        ''' Outputs the log information to terminal. '''
+    def __console_write(self, log: dict):
+        ''' Outputs the log information to terminal. 
+
+            Params:
+                - log: a dictionary created from the methods above
+        '''
         if log.get('level') <= self.config.log_terminal_level:
             log_lines = log.get('log','').split('\n')
             for line in log_lines:
                 if line != '': 
                     print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}")
  
-    def fileLog(self, log: dict): 
-        ''' Writes the log to flat file '''
+    def __file_write(self, log: dict): 
+        ''' Writes the log to flat file 
+        
+            Params:
+                - log: a dictionary created from the methods above
+        '''
         if log.get('level') <= self.config.log_flatfile_level:
             with open(f'{self.config.log_dir}/{self.config.log_file}', 'a') as file:
                 log_lines = log.get('log','').split('\n')
                 for line in log_lines: 
                     file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
 
-    def dbLog(self, log: dict): 
-        ''' Writes the log to the database '''
+    def __db_write(self, log: dict): 
+        ''' Writes the log to the database. This has a basic pattern to create the db connection and
+            should be left this way. The database creates logs and can end up in a recursive loop.
+
+            Params:
+                - log: a dictionary created from the methods above
+        '''
         if log.get('level') <= self.config.log_database_level:
             # Log must be manually input to avoid a feedback loop of db adds triggering logs which get added to db
-            db = database.Db()
-            db.connect()
+            db_conn = psycopg2.connect(
+                    host=self.db_config.host,
+                    user=self.db_config.user,
+                    password=self.db_config.password,
+                    port=self.db_config.port,
+                    dbname=self.db_config.dbname
+                )
 
             tempLog = { k:v for k, v in log.items() if k != 'name'}
 
@@ -196,11 +224,12 @@ class Log():
                 INSERT INTO logs ({ columns })
                 VALUES ({ placeholders })
             '''
+
             try:
-                with db.conn.cursor() as cursor:
-                    cursor.execute(sql, values)    
-                    db.commit()    
-                db.conn.close()
+                with db_conn.cursor() as cursor:
+                    cursor.execute(sql, values)   
+                    db_conn.commit()    
+                db_conn.close()
             except Exception as e:
-                db.close()
+                db_conn.close()
                 raise e

@@ -3,14 +3,14 @@ import unittest
 
 import  modules.documentation as documentation
 from    modules import logging
-from    test import config
+from    test import t_config
 
 class TestDocumentation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Turn off logging globally
         logging.Log.test_mode = True 
-        cls.docs = documentation.Docs.from_test_conf(config.modules.Documentation)
+        cls.docs = documentation.Docs.from_test_conf(t_config.modules.Documentation)
 
     @classmethod
     def tearDownClass(cls):
