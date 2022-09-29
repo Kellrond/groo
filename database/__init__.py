@@ -38,10 +38,10 @@ class Db:
     @classmethod
     def from_test_conf(cls, config):
         ''' Instantiates a class using the test configuration passed in. '''
-        temp_class = cls()
-        temp_class.config = config
+        test_class = cls()
+        test_class.config = config
         log.debug('Test class instantiated')
-        return temp_class
+        return test_class
 
     # Connection controls
     def commit(self):

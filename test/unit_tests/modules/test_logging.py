@@ -9,7 +9,7 @@ class TestLogging(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        pass
+        cls.log = logging.Log.from_test_conf(config.modules.Logging, __name__)
 
     @classmethod
     def tearDownClass(cls):
@@ -20,7 +20,7 @@ class TestLogging(unittest.TestCase):
                 os.remove(log_filepath)
 
     def setUp(self):
-        self.log = logging.Log.from_test_conf(config.modules.Logging, __name__)
+        pass
 
     def tearDown(self):
         pass

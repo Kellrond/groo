@@ -8,7 +8,7 @@ class RoutesDocs(Docs):
         self.routes  = []
 
     def rebuildRoutesDocs(self):
-        self.routes = self.generate_documentation(self.__parse_flask_routing_lines)
+        self.routes = self.generateDocumentation(self.__parse_flask_routing_lines)
         self.__update_routes_db()
 
     def __parse_flask_routing_lines(self, file_lines, file_path) -> list:

@@ -7,7 +7,7 @@ class DependencyDocs(Docs):
         self.dependencies  = []
 
     def rebuilddependencyDocs(self):
-        self.dependencies = self.generate_documentation(self.__parse_dependencies)
+        self.dependencies = self.generateDocumentation(self.__parse_dependencies)
         self.__update_dependencies_db()
 
     def __parse_dependencies(self, file_lines, file_path) -> list:
@@ -72,7 +72,7 @@ class RoutesDocs(Docs):
         self.routes  = []
 
     def rebuildRoutesDocs(self):
-        self.routes = self.generate_documentation(self.__parse_flask_routing_lines)
+        self.routes = self.generateDocumentation(self.__parse_flask_routing_lines)
         self.__update_routes_db()
 
     def __parse_flask_routing_lines(self, file_lines, file_path) -> list:

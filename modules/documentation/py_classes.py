@@ -1,15 +1,142 @@
 from modules.documentation import Docs
+from modules import logging
 # from database import docs_db
 
+log = logging.Log(__name__)
 
 class ClassesDocs(Docs):
     def __init__(self) -> None:
         super().__init__()
         self.classes  = []
-        
+
+    @classmethod
+    def from_test_conf(cls, config):
+        ''' Loads a test configuration file and returns an instance of the class '''
+        test_class = cls()
+        test_class.config = config
+        log.verbose('Test class instantiated')
+        return test_class
+
+    def processPyClassDocs(self):
+        pass
+
+    def flagClasses(self):
+        ''' Find class start and endpoints in file and add appropriate flags '''
+        for file in self.file_lines:
+            prev_line_w_text = 0
+            in_class = False
+            # Start reading the lines of the file
+            for line in file.get('lines'):
+                if in_class == True:
+                    # While in class we want to be sure we know where we are 
+                    if line.get('whitespace') != 0:
+                        line['flags'].append('class')
+                        if line.get('line').strip() != '':
+                            prev_line_w_text = line.get('line_no')
+                    # If we have 0 whitespace the class must be over. 
+                    else:
+                        in_class = False
+                        file['lines'][prev_line_w_text]['flags'].append('class end')
+                        # Clear the extra flags from the blank lines
+                        clear_flags = ['class']
+                        for i in range(prev_line_w_text + 1, line.get('line_no')):
+                            file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x not in clear_flags ]     
+                # A class may end and start in the same line so separate out the if statements.
+                if in_class == False: 
+                    if line.get('whitespace') == 0 and line.get('line')[0:5] == 'class':
+                        line['flags'].append('class')
+                        line['flags'].append('class start')
+                        in_class = True
+            # Fix the flags at the end of the file
+            if in_class:
+                file['lines'][prev_line_w_text]['flags'].append('class end')
+                clear_flags = ['class']
+                for i in range(prev_line_w_text, line.get('line_no')):
+                    file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x not in clear_flags ]   
+
+
+    def flagClassDocstring(self):
+        ''' Find the start and end of doc strings and flag appropriately '''
+        for file in self.file_lines:
+            looking_for_docstring = False
+            in_docstring = False
+            for line in file.get('lines'):
+                if looking_for_docstring == True:
+                    if line.get('line').find("'''") > -1 or line.get('line').find('"""') > -1:
+                        in_docstring = True
+                        # Replace the first ''' or """ of the docstring so we can search for it again
+                        line['line'] = line['line'].replace("'''","   ",1)
+                        line['line'] = line['line'].replace('"""',"   ",1)
+                        line['whitespace'] += 3
+                        line['flags'].append('docstr start')
+                    looking_for_docstring = False
+
+                if in_docstring == True:
+                    if 'docstr start' not in line.get('flags'):
+                        line['flags'].append('docstr')
+                    # If ''' or """ this is the end of the docstring so lets wrap it up
+                    if line.get('line').find("'''") > -1 or line.get('line').find('"""') > -1:
+                        in_docstring = False
+                        line['line'] = line['line'].replace("'''","   ",1)
+                        line['line'] = line['line'].replace('"""',"   ",1)
+                        line['flags'] = [ x for x in line['flags'] if x != 'docstr']
+                        line['flags'].append('docstr end')
+                        
+                if in_docstring == False:
+                    if 'class start' in line.get('flags'):
+                        looking_for_docstring = True
+
+    def flagClassMethods(self):
+        ''' Find and flag class methods '''
+        for file in self.file_lines:
+            in_method = False
+            method_whitespace = 0
+            prev_line_w_text  = 0
+            for line in file.get('lines'):
+                if 'class' in line.get('flags'):
+                    if in_method == True:
+                        line['flags'].append('method')
+                        # Check that another method has not started
+                        if line.get('whitespace') == method_whitespace:
+                            in_method = False
+                            file['lines'][prev_line_w_text]['flags'].append('method end')
+                            # Clear the extra flags from the blank lines
+                            clear_flags = ['method']
+                            for i in range(prev_line_w_text + 1, line.get('line_no')):
+                                file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x not in clear_flags ]     
+
+                            start = line.get('whitespace')
+                            end = start + 4
+                            if line.get('line')[start:end] == 'def ':
+                                line['flags'].append('method start')
+                                in_method = True
+
+                    if in_method == False:
+                        # Look for the start of methods
+                        start = line.get('whitespace')
+                        end = start + 4
+                        if line.get('line')[start:end] == 'def ':                             
+                            in_method = True
+                            method_whitespace = line.get('whitespace')
+                            line['flags'].append('method')
+                            line['flags'].append('method start')
+
+
+                if line.get('line').strip() != '':
+                    prev_line_w_text = line.get('line_no')
+
+
+    def debug_file_lines(self):
+        # This bit is for printing the result of this function   
+        for file in self.file_lines:
+            prev_line_w_text = 0
+            in_class = False
+            for line in file.get('lines'):
+                print(line.get('line_no'), line.get('flags'), line.get('line'))
+                
     def rebuildClassesDocs(self):
-        self.classes = self.generate_documentation(self.__parse_classes)
-        self.__update_classes_db()
+        self.classes = self.generateDocumentation(self.__parse_classes)
+        # self.__update_classes_db()
 
     def __parse_classes(self, file_lines, file_path):
         parsed_list = []
@@ -41,7 +168,6 @@ class ClassesDocs(Docs):
         check_for_func_docstring = False
         in_doc_string = False
         for line in file_lines:
-        
             # END OF CLASS   
             #   This must come first since a second class definition typically follows the first. 
             #   Therefore we need to end a class first then check for a new class
@@ -149,6 +275,6 @@ class ClassesDocs(Docs):
                     class_dict['parameters'] = class_dict['parameters'][1:].strip()
         return parsed_list
 
-    def __update_classes_db(self):
-        docs_db.updateDocClassesDb(self.classes)
+    # def __update_classes_db(self):
+    #     docs_db.updateDocClassesDb(self.classes)
 

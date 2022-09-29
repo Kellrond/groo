@@ -7,7 +7,7 @@ class FunctionsDocs(Docs):
         self.functions  = []
 
     def rebuildFunctionsDocs(self):
-        self.functions = self.generate_documentation(self.__parse_functions)
+        self.functions = self.generateDocumentation(self.__parse_functions)
         self.__update_functions_db()
 
     def __parse_functions(self, file_lines, file_path) -> list:

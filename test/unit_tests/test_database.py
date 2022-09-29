@@ -13,7 +13,7 @@ class TestDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Turn of logging globally
+        # Turn off logging globally
         logging.Log.test_mode = True 
         
         ## The following is if we want to populate a bunch of data on the test_db

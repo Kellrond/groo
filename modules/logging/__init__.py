@@ -34,20 +34,27 @@ class Log():
         
     @classmethod
     def from_test_conf(cls, config, src_name:str):
-        ''' Instantiates a class using the test configuration passed in. 
+        ''' Instantiates a class using the test configuration passed in. Normal or test instances
+            of Log will check for their files at instantiation. 
             
             Params: 
                 - config: a config file loaded from the test/config dir or otherwise
                 - src_name: __name__. Use that every time. 
         '''
-        temp_class = cls(src_name)
-        temp_class.config = config
+        test_class = cls(src_name)
+        test_class.config = config
         # Set logger to testing to mute all output 
         cls.test_mode = True
+        
+        # Make sure the directory structure exists
+        glob_list = glob('./test/**/', recursive=True)
+        if './test/test_data/logs/' not in glob_list:
+            os.mkdir('test/test_data/logs')
         # Make sure the test log file is there
         with open(f'{config.log_dir}/{config.log_file}', 'a'):
             pass 
-        return temp_class
+
+        return test_class
 
 
     def fatal(self, txt: str) -> None:
