@@ -52,9 +52,16 @@ class PyClassesDocs(Docs):
                 # A class may end and start in the same line so separate out the if statements.
                 if in_class == False: 
                     if line.get('whitespace') == 0 and line.get('line')[0:5] == 'class':
+                        in_class = True
                         line['flags'].append('cls')
                         line['flags'].append('cls start')
-                        in_class = True
+
+                        # Find and flag superclasses. Classes are sometimes written with the open/close parenthesis
+                        # therefore the open and close parentheses must be more than a col apart 
+                        open_pos = line.get('line').find('(')
+                        close_pos = line.get('line').find(')')
+                        if close_pos - open_pos > 1:
+                            line['flags'].append('super cls')
             # Fix the flags at the end of the file
             if in_class:
                 file['lines'][prev_line_w_text]['flags'].append('cls end')
@@ -222,7 +229,6 @@ class PyClassesDocs(Docs):
                     line['flags'].append('meth docs') 
                     # Check for single liner
                     if line_after_method_def:
-                        print(docs_start_pos)
                         closing_quotes = max([ line.get('line')[docs_start_pos+3:].find("'''"), line.get('line')[docs_start_pos+3:].find('"""') ])
                     else:
                         closing_quotes = max([ line.get('line').find("'''"), line.get('line').find('"""') ])
@@ -248,45 +254,4 @@ class PyClassesDocs(Docs):
                     if line.get('line').find('->') > -1:
                         line['flags'].append('meth return')
 
-    def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
-        ''' Used to debug / view the output of the function
-
-            Params:
-                - find_filter: `[ f for f in line.get('flags') if f.find(find_filter)]`
-                  to get all class flags just used 'class' else be specific 'class start'
-                - start_pos: defaults to 0 as the line to start printing on 
-                - end_pos: defaults as None for end_pos as the line to stop printing on 
-                - file: defaults to the demo python documentation file
-        '''
-
-        if type(find_filter) == str:
-            find_filter = [find_filter]
-
-        # This bit is for printing the result of this function   
-        for file in [ f for f in self.file_lines if f.get('file_path') == file ]:
-            line_no = []
-            whitespace = []
-            flags = []
-            lines = []
-            for line in file.get('lines'):
-                filtered_flags = []
-                if find_filter != None:
-                    for filter in find_filter:
-                        filtered_flags += [ f for f in line.get('flags') if f == filter ]
-                else:
-                    filtered_flags = line.get('flags')
-
-                line_no.append(str(line.get('line_no')))
-                whitespace.append(str(line.get('whitespace')))
-                flags.append(", ".join(filtered_flags))
-                lines.append(line.get('line'))
-
-            max_len_flags = max([len(x) for x in flags])
-
-        print(file.get('file_path'))
-        print('No. Wspc. Flags')
-
-        if end_pos == None:
-            end_pos = len(line_no)
-        for i in range(start_pos, end_pos):
-            print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
+   

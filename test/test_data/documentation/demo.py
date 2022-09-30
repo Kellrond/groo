@@ -4,7 +4,9 @@
 #                                                     
 #     ___Expected Totals____                                           
 #     Classes . . . . . . 3                                        
-#     Class docstring . . 2                                                   
+#     Class docstring . . 2    
+#     Super class lines . 2
+#     Super classes . . . 3                                               
 #     Methods inc. init . 12                                                 
 #     Method docstring. . 10 
 #     Method returns. . . 11                                               
@@ -123,7 +125,7 @@ def func1(param1, param2:str, param3=None):
     pass
 
 
-class Class3:
+class Class3(Class1, Class1):
     def __init__(self, param1:str, param2:dict, param3:False) -> None:
         self.param1 = param1
 

@@ -85,7 +85,52 @@ class Docs:
                 }
 
                 Docs.file_lines.append(temp_dict)
-                
+
+    def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
+        ''' Used to debug / view the output of the function
+
+            Params:
+                - find_filter: `[ f for f in line.get('flags') if f.find(find_filter)]`
+                  to get all class flags just used 'class' else be specific 'class start'
+                - start_pos: defaults to 0 as the line to start printing on 
+                - end_pos: defaults as None for end_pos as the line to stop printing on 
+                - file: defaults to the demo python documentation file
+        '''
+
+        if type(find_filter) == str:
+            find_filter = [find_filter]
+
+        # This bit is for printing the result of this function   
+        for file in [ f for f in self.file_lines if f.get('file_path') == file ]:
+            line_no = []
+            whitespace = []
+            flags = []
+            lines = []
+            for line in file.get('lines'):
+                filtered_flags = []
+                if find_filter != None:
+                    for filter in find_filter:
+                        filtered_flags += [ f for f in line.get('flags') if f == filter ]
+                else:
+                    filtered_flags = line.get('flags')
+
+                line_no.append(str(line.get('line_no')))
+                whitespace.append(str(line.get('whitespace')))
+                flags.append(", ".join(filtered_flags))
+                lines.append(line.get('line'))
+
+            max_len_flags = max([len(x) for x in flags])
+
+        print(file.get('file_path'))
+        print('No. Wspc. Flags')
+
+        if end_pos == None:
+            end_pos = len(line_no)
+        for i in range(start_pos, end_pos):
+            print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
+
+
+
 
     def generateDocumentation(self, param_func) -> list:
         document_list = []

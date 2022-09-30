@@ -58,6 +58,11 @@ class TestDocsPyClasses(unittest.TestCase):
         result = self.find_flags('cls end')
         self.assertEqual(result, 3, 'There should be 3 class end flags')
 
+        # Now look for Superclasses
+        result = self.find_flags('super cls')
+        self.assertEqual(result, 2, 'There should be 2 super class flags')
+
+
     def test_find_class_docs(self):
         self.classDoc.flagClasses()
         result = self.find_flags('cls docs start')
@@ -125,7 +130,6 @@ class TestDocsPyClasses(unittest.TestCase):
         self.assertEqual(result, 0, 'There should be zero method return flags')
 
         self.classDoc.flagMethodReturnHint()
-        self.classDoc.debug_file_lines()
         result = self.find_flags('meth return')
         self.assertEqual(result, 11, 'There should be 11 method return flags')
 
