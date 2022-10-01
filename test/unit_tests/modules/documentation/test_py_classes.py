@@ -29,6 +29,7 @@ class TestDocsPyClasses(unittest.TestCase):
         pass
     
     def tearDown(self):
+        ''' file_lines is a class variable and we don't want to pollute tests after they have run '''
         for file in self.classDoc.file_lines:
             for line in file.get('lines'):
                 line['flags'] = []
@@ -134,3 +135,13 @@ class TestDocsPyClasses(unittest.TestCase):
         self.assertEqual(result, 11, 'There should be 11 method return flags')
 
 
+    def test_find_nested_methods(self):
+        self.classDoc.flagClasses()
+        self.classDoc.flagClassMethods()
+
+        result = self.find_flags('nest meth start')
+        self.assertEqual(result, 0, 'There should be zero nested method flags')
+
+        self.classDoc.flagNestedFunctions()
+        result = self.find_flags('nest meth start')
+        self.assertEqual(result, 2, 'There should be 2 nested method flags')

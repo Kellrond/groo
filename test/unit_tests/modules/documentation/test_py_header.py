@@ -49,10 +49,27 @@ class TestDocsPyHeader(unittest.TestCase):
         self.assertEqual(result, 0, 'There should be zero file docstring start flags')
         
         self.fileDoc.flagFileComments()
-        self.fileDoc.debug_file_lines('file docs start', 0,50)
-
         result = self.find_flags('file docs start')
         self.assertEqual(result, 1, 'There should be 1 file docstring start flags')
-    
         result = self.find_flags('file docs end')
         self.assertEqual(result, 1, 'There should be 1 file docstring end flags')
+
+    def test_file_imports(self):
+        # Make sure we are empty to begin with
+        result = self.find_flags('import')
+        self.assertEqual(result, 0, 'There should be zero file import flags')
+        
+        self.fileDoc.flagFileImports()
+        result = self.find_flags('import')
+        self.assertEqual(result, 7, 'There should be 7 file import flags')
+
+    def test_file_todos(self):
+        # Make sure we are empty to begin with
+        result = self.find_flags('todo')
+        self.assertEqual(result, 0, 'There should be zero todo flags')
+        
+        self.fileDoc.flagTodos()
+        result = self.find_flags('todo')
+        self.assertEqual(result, 2, 'There should be 2 todo flags')
+
+       

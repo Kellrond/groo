@@ -1,3 +1,11 @@
+'''
+    Overall the design on this is inefficient. It loops through files many many times over.
+    A single pass over a file to create all the flags would be a more efficient way to do it. 
+    But this function wont be run often as it really needs to be done after a major update. 
+    Doing it in a single pass per flag is easier to debug. The only gotchas in this approach 
+    are that some methods require others to be run before hand.  
+    been run already  flag orders will be. 
+'''
 from config  import modules
 from modules import logging
 
@@ -8,6 +16,10 @@ log = logging.Log(__name__)
 class Docs:
     ''' Superclass for other documentation classes. Primarily builds and maintains a file list 
         which is shared by the classes. 
+
+        Notes:
+            - file lines start on zero to make math easy in python. If it's ever going to be displayed 
+              as code this should be adjusted only then. 
     ''' 
     file_paths = []
     file_lines = []
@@ -108,7 +120,7 @@ class Docs:
             lines = []
             for line in file.get('lines'):
                 filtered_flags = []
-                if find_filter != None:
+                if find_filter != None and len(find_filter) > 0:
                     for filter in find_filter:
                         filtered_flags += [ f for f in line.get('flags') if f == filter ]
                 else:
@@ -129,8 +141,15 @@ class Docs:
         for i in range(start_pos, end_pos):
             print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
 
-
-
+    def isFileOfExtension(self, file:dict, ext:str) -> bool:
+        ''' Returns True or False if the file is of the desired extension '''
+        filtered_file_path = file.get('file_path')
+        dot_pos = 1
+        while dot_pos > -1:
+            dot_pos = filtered_file_path.find('.')
+            filtered_file_path = filtered_file_path[dot_pos + 1:]
+        return filtered_file_path == ext
+        
 
     def generateDocumentation(self, param_func) -> list:
         document_list = []

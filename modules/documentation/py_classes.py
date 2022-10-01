@@ -30,8 +30,7 @@ class PyClassesDocs(Docs):
             prev_line_w_text = 0
             in_class = False
 
-            # Ignore non python files and continue to next file
-            if file.get('file_path')[-3:] != '.py':
+            if not self.isFileOfExtension(file, 'py'):
                 continue
 
             for line in file.get('lines'):
@@ -71,12 +70,15 @@ class PyClassesDocs(Docs):
 
     def flagClassDocstring(self):
         ''' Find the start and end of doc strings and flag appropriately '''
+        # Ensure required flags are in place 
+        self.flagClasses()
+
         for file in self.file_lines:
             line_after_class_def = False
             in_docstring = False
             docs_start_pos = 0
             # Ignore non python files and continue to next file
-            if file.get('file_path')[-3:] != '.py':
+            if not self.isFileOfExtension(file, 'py'):
                 continue
 
             for line in file.get('lines'):
@@ -116,12 +118,15 @@ class PyClassesDocs(Docs):
 
     def flagClassMethods(self):
         ''' Find and flag class methods '''
+        # Ensure required flags are in place 
+        self.flagClasses()
+
         for file in self.file_lines:
             in_method = False
             method_whitespace = 0
             prev_line_w_text  = 0
             # Ignore non python files and continue to next file
-            if file.get('file_path')[-3:] != '.py':
+            if not self.isFileOfExtension(file, 'py'):
                 continue
 
             for line in file.get('lines'):
@@ -180,9 +185,13 @@ class PyClassesDocs(Docs):
                     prev_line_w_text = line.get('line_no')
 
     def flagMethodParams(self):
+        # Ensure required flags are in place 
+        self.flagClassMethods()
+
         for file in self.file_lines:
-            if file.get('file_path')[-3:] != '.py': # Ignore non python files
+            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue     
+
             in_method_params = False      
             for line in file.get('lines'):
                 # These 3 if's should remain as three ifs to ensure the right flags stay on
@@ -198,8 +207,11 @@ class PyClassesDocs(Docs):
                     line['flags'].append('meth param end')
 
     def flagMethodDocstring(self):
+        # Ensure required flags are in place 
+        self.flagMethodParams()
+
         for file in self.file_lines:
-            if file.get('file_path')[-3:] != '.py': # Ignore non python files
+            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue       
 
             line_after_method_def = False
@@ -246,12 +258,25 @@ class PyClassesDocs(Docs):
                     line_after_method_def = False
                                      
     def flagMethodReturnHint(self):
+        # Make sure the required flags are in place 
+        self.flagMethodParams()
+
         for file in self.file_lines:
-            if file.get('file_path')[-3:] != '.py': # Ignore non python files
+            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue       
             for line in file.get('lines'): 
                 if 'meth param end' in line.get('flags'):
                     if line.get('line').find('->') > -1:
                         line['flags'].append('meth return')
 
-   
+    def flagNestedFunctions(self):
+        # Ensure required flags are in place 
+        self.flagClassMethods()
+
+        for file in self.file_lines:
+            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+                continue       
+            for line in file.get('lines'): 
+                if 'meth param end' in line.get('flags'):
+                    if line.get('line').find('->') > -1:
+                        line['flags'].append('meth return')

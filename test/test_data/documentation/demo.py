@@ -1,23 +1,30 @@
 # FILE HEADER DOCUMENTATION
 # This file and folder is not documentation about test_data, but test data for documentation
-# This is an example of the types of python documentation 
-#                                                     
-#     ___Expected Totals____                                           
-#     Classes . . . . . . 3                                        
-#     Class docstring . . 2    
-#     Super class lines . 2
-#     Super classes . . . 3                                               
-#     Methods inc. init . 12                                                 
-#     Method docstring. . 10 
-#     Method returns. . . 11                                               
-#     Functions . . . . . 3
-#     Function docstring. 3
+#
+# This is an example of the types of python documentation. In general this can serve as an example of how
+# code should/could look like in the project.
+#                                                    
+#     ____Expected Totals____                                           
+#     Classes . . . . . . . 3                                        
+#     Class docstring . . . 2
+#     File import lines . . 7     
+#     Functions . . . . . . 3
+#     Function docstring. . 3
+#     Function nested def . 1
+#     Methods inc. init . . 12 
+#     Method nested def . . 2                                                
+#     Method docstring. . . 10 
+#     Method returns. . . . 11                                               
+#     Super class lines . . 2
+#     Super classes . . . . 3 
+#     Todo. . . . . . . . . 2                                              
 #                                           
 from datetime import datetime as dt, time
+from config.modules import Documentation, \
+Logging 
 from datetime import timedelta
 import decimal as dec
 import numbers
-
 
 # Start classes 
 class Class1:
@@ -77,6 +84,12 @@ class Class1:
     def c1func2(param1:dict, param2=False):
         ''' Example one string with closing tag on new line. Also a static method
         '''
+        def nestedDef1(param1):
+            return 1
+
+        def nestedDef2(param2):
+            return 2
+
         return ''
 
     def c3func3(
@@ -120,9 +133,10 @@ class Class2(Class1):
         return {}
 
 
-def func1(param1, param2:str, param3=None):
+def testImportInFunction(param1, param2:str, param3=None):
     ''' A single line docstring  '''
-    pass
+    from datetime import timezone
+    
 
 
 class Class3(Class1, Class1):
@@ -150,10 +164,12 @@ class Class3(Class1, Class1):
         return {}
 
 
-def func2(param1, param2: str):
+def testNestedDefInFunction(param1, param2: str):
     ''' Example one string with closing tag on new line
     ''' 
-    # todo: example of todo2
+    # todo: example of todo 2
+    def returns1():
+        return 1
     pass
 
 
