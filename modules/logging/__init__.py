@@ -1,8 +1,23 @@
 import  config
 # External dependancies
 import  datetime as dt
+from    functools import wraps
 from    glob import glob
+from    time import perf_counter
 import  os, psycopg2
+
+def generatePerformanceExecNumber() -> int:
+    ''' By creating a generator function we can generate a chain of executions in the performance log and 
+        get a form of stack trace out of it. 
+    '''
+    i = -1
+    while True:
+        i += 1
+        yield str(i)
+
+# The generator object should be in the files scope so that all the log instances share the generator
+perf_exec_start = generatePerformanceExecNumber()
+perf_exec_end   = generatePerformanceExecNumber()
 
 class Log():
     ''' Handles logging throughout the app. There are 6 levels of logging currently
@@ -63,9 +78,10 @@ class Log():
         # Make sure the test log file is there
         with open(f'{config.log_dir}/{config.log_file}', 'a'):
             pass 
+        with open(f'{config.log_dir}/{config.performance_file}', 'a'):
+            pass 
 
         return test_class
-
 
     def fatal(self, txt: str) -> None:
         ''' Log level: 0'''
@@ -77,11 +93,10 @@ class Log():
             'log': str(txt),
         } 
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)
         
-
     def error(self, txt: str) -> None:
         ''' Log level: 1'''
         log = {
@@ -92,9 +107,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)
 
     def warn(self, txt: str) -> None:
         ''' Log level: 2'''
@@ -106,9 +121,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)
 
     def info(self, txt: str) -> None:
         ''' Log level: 3'''
@@ -120,9 +135,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)
 
     def debug(self, txt: str) -> None:
         ''' Log level: 4'''
@@ -134,9 +149,9 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)
 
     def verbose(self, txt: str) -> None:
         ''' Log level: 5 '''
@@ -148,9 +163,52 @@ class Log():
             'log': str(txt),
         }
         if self.test_mode == False:
-            self.__console_write(log)
-            self.__db_write(log)
-            self.__file_write(log)   
+            self.__log_console_write(log)
+            self.__log_db_write(log)
+            self.__log_file_write(log)   
+    
+    def performance(self, func):
+        ''' This function is a decorator. At some point it might be worth splitting it into it's own class 
+            that way we can include logger performance. 
+
+            Usage:
+                `@log.performance`
+        '''
+        def performance_wrapper(*args, **kwargs):
+            ''' Performance testing is an expensive operation and can slow the operation of the system.
+                However the knowledge you can gleam from this is worth the expense. But it doesn't need
+                to run all the time.  
+            ''' 
+            if not self.config.test_performance:
+                return func(*args, **kwargs)
+
+            is_minimal_log = kwargs.get('minimal', False)
+            if self.config.minimal_test and not is_minimal_log:
+                return func(*args, **kwargs)
+
+            # Setup
+            start_time = perf_counter()
+            start_id   = next(perf_exec_start)
+            # Function
+            result = func(*args, **kwargs)
+            # Wrap up
+            end_time = perf_counter()
+            end_id   = next(perf_exec_end)
+            duration = end_time - start_time
+            log = {
+                'start_id': start_id,
+                'end_id': end_id,
+                'timestamp': dt.datetime.now(),
+                'module': self.src_name,
+                'name': func.__name__,
+                'duration': duration,
+                } 
+            
+            self.__perf_db_write(log)
+            self.__perf_file_write(log)
+            return result
+        return performance_wrapper
+
 
     def __check_for_log_folder(self) -> bool:
         folder_list = glob('**/', recursive=True)
@@ -165,15 +223,18 @@ class Log():
         ''' Ensure that the required folders and files are in place to start logging '''
         if self.__check_for_log_folder() == False:
             os.makedirs(self.config.log_dir)
-        with open(f'{self.config.log_dir}/{self.config.log_file}', 'a'):
-            pass 
-        
+        log_list = [self.config.log_file, self.config.performance_file]
+        for log in log_list:
+            with open(f'{self.config.log_dir}/{log}', 'a'):
+                pass         
+
     def delete_dot_logs(self) -> None:
         ''' Remove all .log files created '''
         os.remove(f'{self.config.log_dir}/{self.config.log_file}')
+        os.remove(f'{self.config.log_dir}/{self.config.performance_file}')
 
     # Output logs
-    def __console_write(self, log: dict):
+    def __log_console_write(self, log: dict):
         ''' Outputs the log information to terminal. 
 
             Params:
@@ -185,7 +246,7 @@ class Log():
                 if line != '': 
                     print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}")
  
-    def __file_write(self, log: dict): 
+    def __log_file_write(self, log: dict): 
         ''' Writes the log to flat file 
         
             Params:
@@ -197,7 +258,7 @@ class Log():
                 for line in log_lines: 
                     file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
 
-    def __db_write(self, log: dict): 
+    def __log_db_write(self, log: dict): 
         ''' Writes the log to the database. This has a basic pattern to create the db connection and
             should be left this way. The database creates logs and can end up in a recursive loop.
 
@@ -219,12 +280,10 @@ class Log():
             columns = ", ".join(tempLog.keys())
             placeholders = ", ".join([ '%s' for x in tempLog.values() ])  
             values = tuple(tempLog.values())
-
             sql = f'''
                 INSERT INTO logs ({ columns })
                 VALUES ({ placeholders })
             '''
-
             try:
                 with db_conn.cursor() as cursor:
                     cursor.execute(sql, values)   
@@ -233,3 +292,40 @@ class Log():
             except Exception as e:
                 db_conn.close()
                 raise e
+
+    def __perf_db_write(self, log:dict):
+        if self.config.performance_to_db:
+            # Log must be manually input to avoid a feedback loop of db adds triggering logs which get added to db
+            db_conn = psycopg2.connect(
+                    host=self.db_config.host,
+                    user=self.db_config.user,
+                    password=self.db_config.password,
+                    port=self.db_config.port,
+                    dbname=self.db_config.dbname
+                )
+
+            tempLog = { k:v for k, v in log.items() if k != 'name'}
+
+            columns = ", ".join(tempLog.keys())
+            placeholders = ", ".join([ '%s' for x in tempLog.values() ])  
+            values = tuple(tempLog.values())
+            sql = f'''
+                INSERT INTO performance_logs ({ columns })
+                VALUES ({ placeholders })
+            '''
+            try:
+                with db_conn.cursor() as cursor:
+                    cursor.execute(sql, values)   
+                    db_conn.commit()    
+                db_conn.close()
+            except Exception as e:
+                db_conn.close()
+                raise e
+
+    def __perf_file_write(self, log:dict):
+        if self.config.performance_to_file:
+            line = f"{log.get('timestamp')}\t{log.get('start_id')}\t{log.get('end_id')}\t{log.get('module')}\t{log.get('name')}\t{log.get('duration'):10.10f}\n"
+            with open(f'{self.config.log_dir}/{self.config.performance_file}', 'a') as file:
+                file.write(line)
+
+

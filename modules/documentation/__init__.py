@@ -26,21 +26,25 @@ class Docs:
     folders    = []
 
     def __init__(self) -> None:
+        log.performance('Docs.__init__')
         self.config = modules.Documentation
- 
+        log.performance('Docs.__init__')
+
     @classmethod
     def from_test_conf(cls, config):
         ''' Loads a test configuration file and returns an instance of the class'''
+        log.performance('Docs.from_test_conf')
         test_class = cls()
         test_class.config = config
         log.verbose('Test class instantiated')
+        log.performance('Docs.from_test_conf')
         return test_class
 
     def generateFolderList(self):
         ''' Loads a list of folders and sub folders to the folder list based on the folders listed
             in the config file. 
         ''' 
-
+        log.performance('Docs.generateFolderList')
         folder_list = []
         for folder in self.config.docs_folder_list:
             folder_list += glob(f"./{folder}/**/", recursive=True)
@@ -55,11 +59,13 @@ class Docs:
         folder_list = [ {'file_path': x, 'split_file_path': [ sq for sq in x.split('/') if sq != '' ], 'folder_id': i } for i, x in enumerate(folder_list) ]
 
         Docs.folders = folder_list
+        log.performance('Docs.generateFolderList')
 
     def generateFilePaths(self):
         ''' Globs the files with the extensions listed in the config file from the folder list
             gathered in self.generateFolderList()
         '''
+        log.performance('Docs.generateFilePaths')
         # Check that the folder class variable has been set
         if len(self.folders) == 0:
             self.generateFolderList()
@@ -69,9 +75,11 @@ class Docs:
                 for ext in self.config.docs_ext_list:
                     Docs.file_paths += glob(f"{ folder.get('file_path') }*.{ ext }")
             log.verbose('Read file paths into class')
+        log.performance('Docs.generateFilePaths')
 
     def readLines(self): 
         ''' Reads the lines of the files generated in self.generateFilePaths '''
+        log.performance('Docs.readLines')
         # Check that the file_paths class variable is not empty and try to fill it
         if len(self.file_paths) == 0:
             self.generateFilePaths()
@@ -95,8 +103,8 @@ class Docs:
                     'file_path': fp,
                     'lines': line_list
                 }
-
                 Docs.file_lines.append(temp_dict)
+        log.performance('Docs.readLines')
 
     def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
         ''' Used to debug / view the output of the function
@@ -108,7 +116,7 @@ class Docs:
                 - end_pos: defaults as None for end_pos as the line to stop printing on 
                 - file: defaults to the demo python documentation file
         '''
-
+        log.performance('Docs.debug_file_lines')
         if type(find_filter) == str:
             find_filter = [find_filter]
 
@@ -135,23 +143,26 @@ class Docs:
 
         print(file.get('file_path'))
         print('No. Wspc. Flags')
-
         if end_pos == None:
             end_pos = len(line_no)
         for i in range(start_pos, end_pos):
             print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
+        log.performance('Docs.debug_file_lines')
 
     def isFileOfExtension(self, file:dict, ext:str) -> bool:
         ''' Returns True or False if the file is of the desired extension '''
+        log.performance('Docs.isFileOfExtension')
         filtered_file_path = file.get('file_path')
         dot_pos = 1
         while dot_pos > -1:
             dot_pos = filtered_file_path.find('.')
             filtered_file_path = filtered_file_path[dot_pos + 1:]
+        log.performance('Docs.isFileOfExtension')
         return filtered_file_path == ext
         
 
     def generateDocumentation(self, param_func) -> list:
+        log.performance('Docs.generateDocumentation')
         document_list = []
         for file_path in self.file_paths:
             with open(file_path, 'r') as file:
@@ -159,5 +170,6 @@ class Docs:
                 routes_in_file = param_func(lines, file_path)
                 if len(routes_in_file) > 0:
                     document_list += routes_in_file 
+        log.performance('Docs.generateDocumentation')
         return document_list 
 

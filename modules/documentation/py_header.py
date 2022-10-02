@@ -14,6 +14,7 @@ class PyFileComments(Docs):
         self.readLines()
 
     @classmethod
+    @log.performance
     def from_test_conf(cls, config):
         ''' Loads a test configuration file and returns an instance of the class '''
         test_class = cls()
@@ -21,6 +22,7 @@ class PyFileComments(Docs):
         log.verbose('Test class instantiated')
         return test_class
 
+    @log.performance
     def flagFileComments(self):
         for file in self.file_lines: 
             # if the file isn't a .py continue to next file
@@ -59,6 +61,7 @@ class PyFileComments(Docs):
                 if len(line.get('line').strip()) > 0: 
                     prev_non_empty_line = line.get('line_no')
 
+    @log.performance
     def flagFileImports(self):
         for file in self.file_lines: 
             # if the file isn't a .py continue to next file
@@ -81,6 +84,7 @@ class PyFileComments(Docs):
                     in_multiline_import = line.get('line').find('\\') > -1                    
 
 
+    @log.performance
     def flagTodos(self):
         for file in self.file_lines: 
             # if the file isn't a .py continue to next file

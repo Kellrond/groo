@@ -1,0 +1,4 @@
+- function docs
+    - test for all functions
+
+- read docs into file. 

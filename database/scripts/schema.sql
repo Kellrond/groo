@@ -67,6 +67,16 @@ create table logs
 	log text
 );
 
+create table performance_logs
+(
+	log_id serial primary key,
+	timestamp timestamp,
+	start_id integer,
+	end_id integer,
+	module text,
+	name text,
+	duration real
+);
 
 
 

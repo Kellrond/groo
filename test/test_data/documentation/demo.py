@@ -84,11 +84,18 @@ class Class1:
     def c1func2(param1:dict, param2=False):
         ''' Example one string with closing tag on new line. Also a static method
         '''
-        def nestedDef1(param1):
+        def nestedDef1(param1) -> int:
+            ''' This is an example of a nested function '''
             return 1
 
-        def nestedDef2(param2):
+        def nestedDef2(param2, \
+            new_line='\n'):
+            ''' And this is another example
+            '''
             return 2
+
+        def nestedDef3():
+            return 3
 
         return ''
 

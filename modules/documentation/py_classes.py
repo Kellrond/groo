@@ -6,11 +6,14 @@ from modules import logging
 log = logging.Log(__name__)
 
 class PyClassesDocs(Docs):
+    @log.performance
     def __init__(self) -> None:
+        
         super().__init__()
         self.readLines()
 
     @classmethod
+    @log.performance
     def from_test_conf(cls, config):
         ''' Loads a test configuration file and returns an instance of the class '''
         test_class = cls()
@@ -18,12 +21,17 @@ class PyClassesDocs(Docs):
         log.verbose('Test class instantiated')
         return test_class
 
+    @log.performance
     def processPyClassDocs(self):
         self.flagClasses()
         self.flagClassDocstring()
         self.flagClassMethods()
+        self.flagMethodParams()
         self.flagMethodDocstring()
+        self.flagMethodReturnHint()
+        self.flagNestedFunctions()
 
+    @log.performance
     def flagClasses(self):
         ''' Find class start and endpoints in file and add appropriate flags '''
         for file in self.file_lines:
@@ -68,11 +76,10 @@ class PyClassesDocs(Docs):
                 for i in range(prev_line_w_text, line.get('line_no')):
                     file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x not in clear_flags ]   
 
+
+    @log.performance
     def flagClassDocstring(self):
         ''' Find the start and end of doc strings and flag appropriately '''
-        # Ensure required flags are in place 
-        self.flagClasses()
-
         for file in self.file_lines:
             line_after_class_def = False
             in_docstring = False
@@ -116,11 +123,9 @@ class PyClassesDocs(Docs):
                 if 'cls start' not in line.get('flags'):
                     line_after_class_def = False
 
+    @log.performance
     def flagClassMethods(self):
         ''' Find and flag class methods '''
-        # Ensure required flags are in place 
-        self.flagClasses()
-
         for file in self.file_lines:
             in_method = False
             method_whitespace = 0
@@ -142,7 +147,7 @@ class PyClassesDocs(Docs):
                                 # Technically we are starting a method here but since its not being
                                 # declared we set it False
                                 in_method = False
-                                line['flags'].append('cls meth')
+                                line['flags'].append('decorated')
                                 file['lines'][prev_line_w_text]['flags'].append('meth end')
                                 # Clear the extra flags from the blank lines
                                 clear_flags = 'meth'
@@ -184,10 +189,8 @@ class PyClassesDocs(Docs):
                 if line.get('line').strip() != '':
                     prev_line_w_text = line.get('line_no')
 
+    @log.performance
     def flagMethodParams(self):
-        # Ensure required flags are in place 
-        self.flagClassMethods()
-
         for file in self.file_lines:
             if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue     
@@ -206,10 +209,8 @@ class PyClassesDocs(Docs):
                     in_method_params = False
                     line['flags'].append('meth param end')
 
+    @log.performance
     def flagMethodDocstring(self):
-        # Ensure required flags are in place 
-        self.flagMethodParams()
-
         for file in self.file_lines:
             if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue       
@@ -256,10 +257,9 @@ class PyClassesDocs(Docs):
                 # to search
                 if 'meth param end' not in line.get('flags'):
                     line_after_method_def = False
-                                     
+         
+    @log.performance
     def flagMethodReturnHint(self):
-        # Make sure the required flags are in place 
-        self.flagMethodParams()
 
         for file in self.file_lines:
             if not self.isFileOfExtension(file, 'py'): # Ignore non python files
@@ -269,14 +269,94 @@ class PyClassesDocs(Docs):
                     if line.get('line').find('->') > -1:
                         line['flags'].append('meth return')
 
+    @log.performance
     def flagNestedFunctions(self):
-        # Ensure required flags are in place 
-        self.flagClassMethods()
-
+        ''' This is a pretty long function. It could be broken up, but it works.'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
-                continue       
-            for line in file.get('lines'): 
-                if 'meth param end' in line.get('flags'):
-                    if line.get('line').find('->') > -1:
-                        line['flags'].append('meth return')
+            in_nested_method = False
+            in_params = False
+            in_docs = False
+            nested_whitespace = 0
+            prev_line_w_text  = 0
+            # Ignore non python files and continue to next file
+            if not self.isFileOfExtension(file, 'py'):
+                continue
+
+            for line in file.get('lines'):
+                # First make sure that we are in a method
+                if 'meth' in line.get('flags'):
+
+                    if in_nested_method == False:
+                        if 'meth' not in line.get('flags'):
+                            continue # to next line
+                        if 'meth start' in line.get('flags'):
+                            continue # wont start a nested function here 
+
+                        # Look for the start of methods
+                        start = line.get('whitespace')
+                        end = start + 4
+                        if line.get('line')[start:end] == 'def ':                             
+                            in_nested_method = True
+                            in_params = True
+                            nested_whitespace = line.get('whitespace')
+                            line['flags'].append('nest meth start')
+                            line['flags'].append('nest meth param start')
+                    
+                        if line.get('line').find(')') > -1 and in_params:
+                            in_params = False
+                            line['flags'].append('nest meth param')
+                            line['flags'].append('nest meth param end')
+                            if line.get('line').find('->') > -1:
+                                line['flags'].append('nest meth return')   
+
+                    if in_nested_method == True:
+                        if in_params:
+                            line['flags'].append('nest meth param')
+                            if line.get('line').find(')') > -1:
+                                in_params = False
+                                line['flags'].append('nest meth param end')
+                                if line.get('line').find('->') > -1:
+                                    line['flags'].append('nest meth return')   
+
+                        # Check that another method has not ended 
+                        if line.get('whitespace') == nested_whitespace and 'nest meth start' not in line.get('flags'):
+                            in_nested_method = False
+                            file['lines'][prev_line_w_text]['flags'].append('nest meth end')
+                            # Clear flags between the end of the method and the line we are on  
+                            clear_flags = 'nest meth'
+                            for i in range(prev_line_w_text + 1, line.get('line_no')):
+                                file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x != clear_flags ]     
+                        
+                            if line.get('line')[line.get('whitespace'):line.get('whitespace')+4] == 'def ':
+                                line['flags'].append('nest meth start')
+                                line['flags'].append('nest meth param start')
+                                in_nested_method = True
+                                in_params = True
+
+                        # Docstring 
+                        if in_docs or line.get('line').find("'''") > -1 or line.get('line').find('"""') > -1:
+                            line['flags'].append('nest meth docs')
+                            first_three = line.get('line')[line.get('whitespace'):line.get('whitespace')+3]
+                            if first_three == '"""' or first_three == "'''":
+                                if in_docs:
+                                    in_docs = False
+                                    line['flags'].append('nest meth docs end')
+                                    continue # To next line
+                                in_docs = True
+                                line['flags'].append('nest meth docs start')
+                                remaining_line = line.get('line')[line.get('whitespace')+3:]
+                                if remaining_line.find('"""') > -1 or remaining_line.find("'''") > -1:
+                                    in_docs = False
+                                    line['flags'].append('nest meth docs end')
+                            else: # This line must be an additional line
+                                # Check if it closes
+                                if line.get('line').find('"""') > -1 or line.get('line').find("'''") > -1:
+                                    in_docs = False
+                                    line['flags'].append('nest meth docs end')
+                           
+                        # If still in a method and tag as such
+                        if in_nested_method:
+                            line['flags'].append('nest meth')
+
+                    if line.get('line').strip() != '':
+                        prev_line_w_text = line.get('line_no')

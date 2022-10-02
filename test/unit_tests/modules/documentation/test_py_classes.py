@@ -136,12 +136,30 @@ class TestDocsPyClasses(unittest.TestCase):
 
 
     def test_find_nested_methods(self):
-        self.classDoc.flagClasses()
-        self.classDoc.flagClassMethods()
+        # self.classDoc.flagClasses()
+        # self.classDoc.flagClassMethods()
 
         result = self.find_flags('nest meth start')
         self.assertEqual(result, 0, 'There should be zero nested method flags')
 
-        self.classDoc.flagNestedFunctions()
+        # self.classDoc.flagNestedFunctions()
+
+        self.classDoc.processPyClassDocs()
+        self.classDoc.debug_file_lines()
         result = self.find_flags('nest meth start')
-        self.assertEqual(result, 2, 'There should be 2 nested method flags')
+        self.assertEqual(result, 3, 'There should be 3 nested method start flags')
+
+        result = self.find_flags('nest meth param start')
+        self.assertEqual(result, 3, 'There should be 3 nested method param start flags')
+
+        result = self.find_flags('nest meth docs start')
+        self.assertEqual(result, 2, 'There should be 2 nested method docs start flags')
+
+        result = self.find_flags('nest meth end')
+        self.assertEqual(result, 3, 'There should be 3 nested method end flags')
+
+        result = self.find_flags('nest meth param end')
+        self.assertEqual(result, 3, 'There should be 3 nested method param end flags')
+
+        result = self.find_flags('nest meth docs end')
+        self.assertEqual(result, 2, 'There should be 2 nested method docs end flags')

@@ -23,6 +23,7 @@ class Db:
             That is not how to close a connection. Please use the close() method.
 
     '''
+    @log.performance
     def __init__(self) -> None:
         self.config = config.db.GrowDb
         self.conn = None
@@ -36,6 +37,7 @@ class Db:
             self.conn.close()
 
     @classmethod
+    @log.performance
     def from_test_conf(cls, config):
         ''' Instantiates a class using the test configuration passed in. '''
         test_class = cls()
@@ -44,12 +46,13 @@ class Db:
         return test_class
 
     # Connection controls
+    @log.performance
     def commit(self):
         ''' Commit the last set of statements to the database '''
-        if self.conn is not None:
-            self.conn.commit()
-            log.verbose('Transaction committed')
+        self.conn.commit()
+        log.verbose('Transaction committed')
 
+    @log.performance
     def connect(self):
         ''' If inactive open a connection to the database '''
         if self.conn is None:
@@ -61,11 +64,12 @@ class Db:
                     port=self.config.port,
                     dbname=self.config.dbname
                 )
-                log.verbose('Connected')       
+                log.verbose('Connected')      
             except Exception as e:
                 log.error(traceback.format_exc())
                 raise e
 
+    @log.performance
     def close(self):
         ''' If active close the database connection '''
         if self.conn is not None:
@@ -75,6 +79,7 @@ class Db:
 
     # Table functions
     
+    @log.performance
     def createTable(self, table: dict, drop_if_exists=False) -> None:
         ''' Create a table from the dictionary passed in 
         
@@ -102,6 +107,7 @@ class Db:
         if table.get('__table__'):
             table_name = table.pop('__table__')
         else:
+            log.performance('Db.createTable')
             raise Exception('Create table dict requires "__table__"')
 
         if drop_if_exists:
@@ -113,6 +119,7 @@ class Db:
             results = self.query(sql)
             results = [v.get('table_name') for v in results]
             if table_name in results:
+                log.performance('Db.createTable')
                 return
 
         # Build the create table statement
@@ -125,6 +132,8 @@ class Db:
         self.execute(sql)
         log.info(f'Table { table_name } created')
 
+
+    @log.performance
     def nextId(self, table_name: str): 
         ''' Get the next id in a sequence. Be aware of table with serial or
             auto-incrementing primary keys. They do not get passed keys as they generate
@@ -136,7 +145,6 @@ class Db:
             Params:
                 - table_name: just pass in the table name and the rest will get discovered
         '''
-
         primary_keys = self.getPrimaryKeysFromTable(table_name)
         
         # Check for serialized and return non if found
@@ -152,7 +160,9 @@ class Db:
             if max_id == None:
                 return 1
             return max_id + 1
+        
 
+    @log.performance
     def getPrimaryKeysFromTable(self, table_name: str) -> list:
         ''' The primary keys a good details to have when working with a table
 
@@ -186,6 +196,7 @@ class Db:
         return primary_keys
 
     # Queries with a return
+    @log.performance
     def query(self, sql: str) -> list:
         ''' Query the database, returns a dictionary
 
@@ -203,6 +214,7 @@ class Db:
             cursor.close()
             return records
 
+    @log.performance
     def queryOne(self, sql: str) -> dict:
         ''' Like query() but returns a single record as a dictionary
 
@@ -220,6 +232,7 @@ class Db:
             cursor.close()
             return records        
  
+    @log.performance
     def scalar(self, sql):
         ''' Returns a scalar (single element) result. SQL statement passed in must return 
             only one row. If multiple columns are returned it will return the value in the 
@@ -241,6 +254,7 @@ class Db:
             cursor.close()
             return records[0] 
 
+    @log.performance
     def execute(self, sql: str, autoCommit=True) -> bool:
         ''' Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. 
             
@@ -254,6 +268,7 @@ class Db:
         if autoCommit:
             self.commit()
 
+    @log.performance
     def add(self, dbo: dict or list, single_transaction=True):
         ''' Add one or many row. Rows are inserted individually so in a list of
             records you may insert to multiple rows at a time. 
@@ -333,6 +348,7 @@ class Db:
             self.commit()   
         log.debug(f'Db.add() {len(dbo)} row(s) to database')  
 
+    @log.performance
     def upsert(self, dbo: dict):
         ''' UP-dates or in-SERTs a record as necessary 
                 Params:
@@ -366,5 +382,3 @@ class Db:
         log.verbose(f'Db.upsert() rows into { table_name }')
         # Restore the table name to the dbo incase it's being used again
         dbo['__table__'] = table_name
-
-        
