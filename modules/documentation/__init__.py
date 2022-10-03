@@ -8,7 +8,7 @@
 '''
 from config  import modules
 from modules import logging
-
+# External dependencies
 from glob import glob
 
 log = logging.Log(__name__)
@@ -21,9 +21,9 @@ class Docs:
             - file lines start on zero to make math easy in python. If it's ever going to be displayed 
               as code this should be adjusted only then. 
     ''' 
-    file_paths = []
-    file_lines = []
-    folders    = []
+    file_paths  = []
+    file_lines  = []
+    folder_list = []
 
     def __init__(self) -> None:
         log.performance('Docs.__init__')
@@ -31,20 +31,22 @@ class Docs:
         log.performance('Docs.__init__')
 
     @classmethod
+    @log.performance
     def from_test_conf(cls, config):
         ''' Loads a test configuration file and returns an instance of the class'''
-        log.performance('Docs.from_test_conf')
+
         test_class = cls()
         test_class.config = config
         log.verbose('Test class instantiated')
-        log.performance('Docs.from_test_conf')
+
         return test_class
 
+    @log.performance
     def generateFolderList(self):
         ''' Loads a list of folders and sub folders to the folder list based on the folders listed
             in the config file. 
         ''' 
-        log.performance('Docs.generateFolderList')
+
         folder_list = []
         for folder in self.config.docs_folder_list:
             folder_list += glob(f"./{folder}/**/", recursive=True)
@@ -58,35 +60,40 @@ class Docs:
         folder_list = [ x for x in folder_list if x.find('__pycache__') == -1 ]
         folder_list = [ {'file_path': x, 'split_file_path': [ sq for sq in x.split('/') if sq != '' ], 'folder_id': i } for i, x in enumerate(folder_list) ]
 
-        Docs.folders = folder_list
-        log.performance('Docs.generateFolderList')
+        Docs.folder_list = folder_list
 
+    @log.performance
     def generateFilePaths(self):
         ''' Globs the files with the extensions listed in the config file from the folder list
             gathered in self.generateFolderList()
         '''
-        log.performance('Docs.generateFilePaths')
         # Check that the folder class variable has been set
-        if len(self.folders) == 0:
+        if len(self.folder_list) == 0:
             self.generateFolderList()
 
         if len(self.file_paths) == 0: # Don't waste cycles
-            for folder in self.folders:
+            for folder in self.folder_list:
                 for ext in self.config.docs_ext_list:
-                    Docs.file_paths += glob(f"{ folder.get('file_path') }*.{ ext }")
+                    glob_list = glob(f"{ folder.get('file_path') }*.{ ext }")
+                    for fp in glob_list:
+                        Docs.file_paths.append(
+                            {
+                            'folder_id': folder.get('folder_id'),
+                            'file_path': fp
+                            }
+                        )
             log.verbose('Read file paths into class')
-        log.performance('Docs.generateFilePaths')
 
+    @log.performance
     def readLines(self): 
         ''' Reads the lines of the files generated in self.generateFilePaths '''
-        log.performance('Docs.readLines')
         # Check that the file_paths class variable is not empty and try to fill it
         if len(self.file_paths) == 0:
             self.generateFilePaths()
 
         if len(self.file_lines) == 0: # Don't waste cycles
-            for fp in self.file_paths:
-                with open(fp, 'r') as file:
+            for i, fp in enumerate(self.file_paths):
+                with open(fp.get('file_path'), 'r') as file:
                     lines = file.readlines()
               
                 line_list = []
@@ -100,12 +107,15 @@ class Docs:
                     })
 
                 temp_dict = { 
-                    'file_path': fp,
+                    'file_path': fp.get('file_path'),
+                    'folder_id': fp.get('folder_id'),
+                    'file_id': i,
+                    'length': len(line_list),
                     'lines': line_list
                 }
                 Docs.file_lines.append(temp_dict)
-        log.performance('Docs.readLines')
 
+    @log.performance
     def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
         ''' Used to debug / view the output of the function
 
@@ -116,7 +126,6 @@ class Docs:
                 - end_pos: defaults as None for end_pos as the line to stop printing on 
                 - file: defaults to the demo python documentation file
         '''
-        log.performance('Docs.debug_file_lines')
         if type(find_filter) == str:
             find_filter = [find_filter]
 
@@ -147,22 +156,19 @@ class Docs:
             end_pos = len(line_no)
         for i in range(start_pos, end_pos):
             print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
-        log.performance('Docs.debug_file_lines')
 
+    @log.performance
     def isFileOfExtension(self, file:dict, ext:str) -> bool:
         ''' Returns True or False if the file is of the desired extension '''
-        log.performance('Docs.isFileOfExtension')
         filtered_file_path = file.get('file_path')
         dot_pos = 1
         while dot_pos > -1:
             dot_pos = filtered_file_path.find('.')
             filtered_file_path = filtered_file_path[dot_pos + 1:]
-        log.performance('Docs.isFileOfExtension')
         return filtered_file_path == ext
         
-
+    @log.performance
     def generateDocumentation(self, param_func) -> list:
-        log.performance('Docs.generateDocumentation')
         document_list = []
         for file_path in self.file_paths:
             with open(file_path, 'r') as file:
@@ -170,6 +176,5 @@ class Docs:
                 routes_in_file = param_func(lines, file_path)
                 if len(routes_in_file) > 0:
                     document_list += routes_in_file 
-        log.performance('Docs.generateDocumentation')
         return document_list 
 

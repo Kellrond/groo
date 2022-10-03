@@ -1,23 +1,14 @@
 import  config
+from    modules import utilities
 # External dependancies
 import  datetime as dt
-from    functools import wraps
 from    glob import glob
 from    time import perf_counter
 import  os, psycopg2
 
-def generatePerformanceExecNumber() -> int:
-    ''' By creating a generator function we can generate a chain of executions in the performance log and 
-        get a form of stack trace out of it. 
-    '''
-    i = -1
-    while True:
-        i += 1
-        yield str(i)
-
 # The generator object should be in the files scope so that all the log instances share the generator
-perf_exec_start = generatePerformanceExecNumber()
-perf_exec_end   = generatePerformanceExecNumber()
+perf_exec_start = utilities.generateIntegerSequence()
+perf_exec_end   = utilities.generateIntegerSequence()
 
 class Log():
     ''' Handles logging throughout the app. There are 6 levels of logging currently

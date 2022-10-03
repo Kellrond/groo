@@ -1,4 +1,4 @@
-from crypt import methods
+import config
 from modules.documentation import Docs
 from modules import logging
 # from database import docs_db
@@ -8,7 +8,7 @@ log = logging.Log(__name__)
 class PyClassesDocs(Docs):
     @log.performance
     def __init__(self) -> None:
-        
+        self.config = config.modules.Documentation
         super().__init__()
         self.readLines()
 
@@ -37,7 +37,6 @@ class PyClassesDocs(Docs):
         for file in self.file_lines:
             prev_line_w_text = 0
             in_class = False
-
             if not self.isFileOfExtension(file, 'py'):
                 continue
 
@@ -260,7 +259,6 @@ class PyClassesDocs(Docs):
          
     @log.performance
     def flagMethodReturnHint(self):
-
         for file in self.file_lines:
             if not self.isFileOfExtension(file, 'py'): # Ignore non python files
                 continue       

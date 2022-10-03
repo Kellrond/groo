@@ -10,7 +10,8 @@
 #     File import lines . . 7     
 #     Functions . . . . . . 3
 #     Function docstring. . 3
-#     Function nested def . 1
+#     Function nested def . 2
+#     Function return . . . 1
 #     Methods inc. init . . 12 
 #     Method nested def . . 2                                                
 #     Method docstring. . . 10 
@@ -177,6 +178,13 @@ def testNestedDefInFunction(param1, param2: str):
     # todo: example of todo 2
     def returns1():
         return 1
+    
+    def returns2():
+        ''' As the function says returns 
+            two
+        '''
+        x = 1
+        return 2
     pass
 
 

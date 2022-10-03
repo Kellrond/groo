@@ -1,12 +1,10 @@
-from urllib.parse import quote_plus
-from xml.dom import HierarchyRequestErr
 from modules.documentation import Docs
 from modules import logging
 # from database import docs_db
 
 log = logging.Log(__name__)
 
-class PyFileComments(Docs):
+class PyFileDocs(Docs):
     ''' File comments reside at the top of a file before the imports 
     '''
     def __init__(self) -> None:
@@ -21,6 +19,13 @@ class PyFileComments(Docs):
         test_class.config = config
         log.verbose('Test class instantiated')
         return test_class
+
+    @log.performance
+    def processPyFileDocs(self):
+        ''' Runs the flagging in the correct order. Though in this case order does not matter as much. '''
+        self.flagFileComments()
+        self.flagFileImports()
+        self.flagTodos()
 
     @log.performance
     def flagFileComments(self):
@@ -82,7 +87,6 @@ class PyFileComments(Docs):
                     line['flags'].append('import')
                     # Check if it continues to yet another line
                     in_multiline_import = line.get('line').find('\\') > -1                    
-
 
     @log.performance
     def flagTodos(self):

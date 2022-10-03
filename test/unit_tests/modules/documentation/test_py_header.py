@@ -3,7 +3,7 @@ from mailbox import linesep
 import unittest
 
 import  modules.documentation as documentation
-from  modules.documentation import py_header
+from  modules.documentation import py_meta
 
 from modules import logging
 from test import t_config
@@ -18,7 +18,7 @@ class TestDocsPyHeader(unittest.TestCase):
     def setUpClass(cls):
         # Turn off logging globally
         logging.Log.test_mode = True 
-        cls.fileDoc = py_header.PyFileComments.from_test_conf(t_config.modules.Documentation)
+        cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc.readLines()
 
     @classmethod
@@ -45,6 +45,7 @@ class TestDocsPyHeader(unittest.TestCase):
 
     def test_file_comments(self):
         # Make sure we are empty to begin with
+        
         result = self.find_flags('file docs start')
         self.assertEqual(result, 0, 'There should be zero file docstring start flags')
         

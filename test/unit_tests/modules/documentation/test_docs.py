@@ -24,12 +24,15 @@ class TestDocumentation(unittest.TestCase):
 
     def test_generate_folder_and_file_lists(self): 
         self.docs.generateFolderList()
-        find_test_path = sum([ 1 for x in self.docs.folders if x.get('file_path') == 'test/test_data/documentation/' ]) 
+        find_test_path = sum([ 1 for x in self.docs.folder_list if x.get('file_path') == 'test/test_data/documentation/' ]) 
         self.assertEqual(find_test_path, 1, 'Did not locate test folder')
         
         self.docs.generateFilePaths()
-        self.assertTrue('test/test_data/documentation/demo.py' in self.docs.file_paths, 'demo.py not located in test/test_data/documentation/')
-        self.assertTrue('test/test_data/documentation/example.bad' not in self.docs.file_paths, 'example.bad was not ignored because of file extension')
+        
+        fpaths = [ x.get('file_path') for x in self.docs.file_paths ]
+
+        self.assertTrue('test/test_data/documentation/demo.py' in fpaths, 'demo.py not located in test/test_data/documentation/')
+        self.assertTrue('test/test_data/documentation/example.bad' not in fpaths, 'example.bad was not ignored because of file extension')
 
     def test_read_lines(self):
         self.assertEqual(len(self.docs.file_lines), 0, 'file_lines should be empty')

@@ -1,7 +1,7 @@
 -- Documentation Tables
 create table if not exists doc_classes
 (
-	class_id serial primary key,
+	class_id integer primary key,
 	file_id integer,
 	name text,
 	superclass text,
@@ -21,7 +21,7 @@ create table doc_dependencies
 
 create table doc_files
 (
-	file_id serial primary key,
+	file_id integer primary key,
 	folder_id integer,
 	name text,
 	file_path text,
@@ -31,7 +31,7 @@ create table doc_files
 
 create table doc_folders
 (
-	folder_id serial primary key,
+	folder_id integer primary key,
 	parent_id integer,
 	file_path text,
 	name text
@@ -39,8 +39,8 @@ create table doc_folders
 
 create table doc_functions
 (
-	function_id serial primary key,
-	class_id integer,
+	function_id integer primary key,
+	parent_id integer,
 	file_id integer,
 	name text,
 	parameters text,
