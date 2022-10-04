@@ -115,8 +115,7 @@ class PyDocsParser(Docs):
 
                 if 'meth' in flags:
                     method_list.append(ln_dict)
-                    continue
-
+                    continue # to next line, no more processing needed
 
                 if 'cls start' in flags:
                     if txt.find('(') > -1:
@@ -128,7 +127,6 @@ class PyDocsParser(Docs):
                 if 'super cls' in flags:
                     super_cls_str = txt[txt.find('(')+1:txt.find(')')]
                     cls['superclass'] = [x.strip() for x in super_cls_str.split(',')]
-
 
                 # Docstring
                 if 'cls docs start' in flags:
@@ -152,11 +150,11 @@ class PyDocsParser(Docs):
 
             self.classes.append(cls)
 
-            self.__parse_methods(self)
+            self.__parse_methods(file, cls.get('class_id'), method_list)
             # End of loop through classes
 
     @log.performance
-    def __parse_methods(self, file:dict, func_id:int, method_lists:list):
+    def __parse_methods(self, file:dict, class_id:int, method_lists:list):
         ''' Splits out the logic for methods from classes.  
         
             Params: 
@@ -164,7 +162,24 @@ class PyDocsParser(Docs):
                 - class_id: the parent function_id to be placed in the nested function object
                 - method_lists: a filtered list of lines containing relevant flags
         '''   
-        print("MARCOOOOOOOOOO")
+        for method in method_lists:
+            meth = {
+                'file_id': file.get('file_id'),
+                'class_id': class_id,
+                'parent_id': None,
+                'function_id': next(function_id_gen),
+                'name': '',
+                'parameters': [],
+                'returns': None,
+                'docstring': [],
+                'decorators': [], 
+                'line_start': method[0].get('line_no'),
+                'line_count': len(method)                
+            }
+
+            ## Fill in the rest here............
+
+            self.functions.append(meth)
 
 
     @log.performance
