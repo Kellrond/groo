@@ -20,16 +20,14 @@ class TestDocsPyHeader(unittest.TestCase):
         logging.Log.test_mode = True 
         cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc.readLines()
+        cls.fileDoc.processPyFileFlags()
 
     @classmethod
     def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        pass
-    
-    def tearDown(self):
-        pass
+        ''' file_lines is a class variable and we don't want to pollute tests after they have run '''
+        for file in cls.fileDoc.file_lines:
+            for line in file.get('lines'):
+                line['flags'] = []
 
     # Helper functions
     def find_flags(self, flag:str) -> int:
@@ -44,33 +42,18 @@ class TestDocsPyHeader(unittest.TestCase):
         return count
 
     def test_file_comments(self):
-        # Make sure we are empty to begin with
-        
-        result = self.find_flags('file docs start')
-        self.assertEqual(result, 0, 'There should be zero file docstring start flags')
-        
-        self.fileDoc.flagFileComments()
         result = self.find_flags('file docs start')
         self.assertEqual(result, 1, 'There should be 1 file docstring start flags')
         result = self.find_flags('file docs end')
         self.assertEqual(result, 1, 'There should be 1 file docstring end flags')
 
     def test_file_imports(self):
-        # Make sure we are empty to begin with
-        result = self.find_flags('import')
-        self.assertEqual(result, 0, 'There should be zero file import flags')
-        
-        self.fileDoc.flagFileImports()
         result = self.find_flags('import')
         self.assertEqual(result, 7, 'There should be 7 file import flags')
 
     def test_file_todos(self):
-        # Make sure we are empty to begin with
         result = self.find_flags('todo')
-        self.assertEqual(result, 0, 'There should be zero todo flags')
-        
-        self.fileDoc.flagTodos()
-        result = self.find_flags('todo')
-        self.assertEqual(result, 2, 'There should be 2 todo flags')
+        # There are 2 todo's but one is a 2 liner
+        self.assertEqual(result, 3, 'There should be 3 todo flags')
 
        

@@ -31,11 +31,6 @@ class TestDatabase(unittest.TestCase):
     def tearDownClass(cls):
         del cls.db
 
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
 
     # Helper functions
     def drop_test_table(self):

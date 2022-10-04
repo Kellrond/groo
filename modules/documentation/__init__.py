@@ -25,10 +25,10 @@ class Docs:
     file_lines  = []
     folder_list = []
 
+    @log.performance
     def __init__(self) -> None:
-        log.performance('Docs.__init__')
         self.config = modules.Documentation
-        log.performance('Docs.__init__')
+
 
     @classmethod
     @log.performance
@@ -97,10 +97,10 @@ class Docs:
                     lines = file.readlines()
               
                 line_list = []
-                for i, line in enumerate(lines):
+                for n, line in enumerate(lines):
                     # Each line should have the line numbers, line and flags
                     line_list.append({
-                        'line_no': i,
+                        'line_no': n,
                         'whitespace': len(line) - len(line.lstrip()),
                         'flags': [],
                         'line': line.replace('\n',''),

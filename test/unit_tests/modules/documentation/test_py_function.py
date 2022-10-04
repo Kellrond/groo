@@ -20,17 +20,12 @@ class TestDocsPyFunctions(unittest.TestCase):
         logging.Log.test_mode = True 
         cls.funcDoc = py_functions.PyFunctionDocs.from_test_conf(t_config.modules.Documentation)
         cls.funcDoc.readLines()
+        cls.funcDoc.processPyFunctionFlags()
 
     @classmethod
     def tearDownClass(cls):
-        pass
-
-    def setUp(self):
-        pass
-    
-    def tearDown(self):
         ''' file_lines is a class variable and we don't want to pollute tests after they have run '''
-        for file in self.funcDoc.file_lines:
+        for file in cls.funcDoc.file_lines:
             for line in file.get('lines'):
                 line['flags'] = []
 
@@ -47,24 +42,12 @@ class TestDocsPyFunctions(unittest.TestCase):
         return count
 
     def test_func_defs(self):
-        # Make sure we are empty to begin with
-        result = self.find_flags('func start')
-        self.assertEqual(result, 0, 'There should be zero function start flags')
-        
-        self.funcDoc.flagFunctions()
         result = self.find_flags('func start')
         self.assertEqual(result, 3, 'There should be 3 function start flags')
         result = self.find_flags('func end')
         self.assertEqual(result, 3, 'There should be 3 function end flags')
 
     def test_func_params(self):
-        self.funcDoc.flagFunctions()
-
-        # Make sure we are empty to begin with
-        result = self.find_flags('func param start')
-        self.assertEqual(result, 0, 'There should be zero function parameter start flags')
-
-        self.funcDoc.flagFunctionParams()
         result = self.find_flags('func param start')
         self.assertEqual(result, 3, 'There should be 3 function parameter start flags')
         result = self.find_flags('func param end')
@@ -73,34 +56,27 @@ class TestDocsPyFunctions(unittest.TestCase):
         self.assertEqual(result, 1, 'There should be 1 function return flags')
 
     def test_func_docs(self):
-        self.funcDoc.flagFunctions()
-        self.funcDoc.flagFunctionParams()
-        # Make sure we are empty to begin with
-        result = self.find_flags('func docs start')
-        self.assertEqual(result, 0, 'There should be zero function docstring start flags')
-
-        self.funcDoc.flagFunctionDocstring()
         result = self.find_flags('func docs start')
         self.assertEqual(result, 3, 'There should be 3 function docstring start flags')
         result = self.find_flags('func docs end')
         self.assertEqual(result, 3, 'There should be 3 function docstring end flags')
        
     def test_nested_func(self):
-        self.funcDoc.flagFunctions()
-        self.funcDoc.flagFunctionParams()
-        self.funcDoc.flagFunctionDocstring()
-
-        # Make sure we are empty to begin with
         result = self.find_flags('nest func start')
-        self.assertEqual(result, 0, 'There should be zero nested function start flags')
-
-        self.funcDoc.flagNestedFunctions()
-        result = self.find_flags('nest func start')
-        self.assertEqual(result, 2, 'There should be 2 nested function start flags')
+        self.assertEqual(result, 3, 'There should be 3 nested function start flags')
         result = self.find_flags('nest func end')
-        self.assertEqual(result, 2, 'There should be 2 nested function end flags')
+        self.assertEqual(result, 3, 'There should be 3 nested function end flags')
         result = self.find_flags('nest func param start')
-        self.assertEqual(result, 2, 'There should be 2 nested function parameter start flags')
+        self.assertEqual(result, 3, 'There should be 3 nested function parameter start flags')
         result = self.find_flags('nest func param end')
-        self.assertEqual(result, 2, 'There should be 2 nested function parameter end flags')
-       
+        self.assertEqual(result, 3, 'There should be 3 nested function parameter end flags')
+        
+        result = self.find_flags('nest func return')
+        self.assertEqual(result, 2, 'There should be 2 nested function return flags')
+
+
+
+
+    def test_decorators(self):
+        result = self.find_flags('decorated')
+        self.assertEqual(result, 2, 'Function decorators failed')

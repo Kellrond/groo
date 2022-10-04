@@ -21,7 +21,7 @@ class PyFileDocs(Docs):
         return test_class
 
     @log.performance
-    def processPyFileDocs(self):
+    def processPyFileFlags(self):
         ''' Runs the flagging in the correct order. Though in this case order does not matter as much. '''
         self.flagFileComments()
         self.flagFileImports()

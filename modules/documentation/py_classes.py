@@ -22,7 +22,7 @@ class PyClassesDocs(Docs):
         return test_class
 
     @log.performance
-    def processPyClassDocs(self):
+    def processPyClassFlags(self):
         self.flagClasses()
         self.flagClassDocstring()
         self.flagClassMethods()
@@ -137,6 +137,7 @@ class PyClassesDocs(Docs):
                 # First make sure that we are in a class and not flagging a nested function
                 if 'cls' in line.get('flags'):
                     if in_method == True:
+
                         # Check that another method has not started
                         if line.get('whitespace') == method_whitespace:
                             stripped_line = line.get('line').strip()
@@ -161,11 +162,11 @@ class PyClassesDocs(Docs):
                                 clear_flags = 'meth'
                                 for i in range(prev_line_w_text + 1, line.get('line_no')):
                                     file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x != clear_flags ]     
-                        
+                           
                         # If still in a method and tag as such
                         if in_method:
                             line['flags'].append('meth')
-    
+
                     if in_method == False:
                         # Look for the start of methods
                         start = line.get('whitespace')
@@ -177,9 +178,12 @@ class PyClassesDocs(Docs):
                             line['flags'].append('meth')
                             if line.get('line')[start:end+8] == 'def __init__':
                                 line['flags'].append('init')
+
+
                 # Catch the end of class and close off methods
                 elif in_method and 'cls' not in line.get('flags'):
                     in_method = False
+                    in_init = False
                     file['lines'][prev_line_w_text]['flags'].append('meth end')
                     clear_flags = 'meth'
                     for i in range(prev_line_w_text + 1, line.get('line_no')):

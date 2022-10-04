@@ -7,10 +7,13 @@
 #     ____Expected Totals____                                           
 #     Classes . . . . . . . 3                                        
 #     Class docstring . . . 2
-#     File import lines . . 7     
+#     File import lines . . 7   
+#     File imports. . . . . 9
+#     File import aliases . 3
+#     File import objects . 5 (from foo import [bar] <-)  
 #     Functions . . . . . . 3
 #     Function docstring. . 3
-#     Function nested def . 2
+#     Function nested def . 3
 #     Function return . . . 1
 #     Methods inc. init . . 12 
 #     Method nested def . . 2                                                
@@ -18,14 +21,15 @@
 #     Method returns. . . . 11                                               
 #     Super class lines . . 2
 #     Super classes . . . . 3 
-#     Todo. . . . . . . . . 2                                              
+#     Todo. . . . . . . . . 2                                             
+#     Todo lines. . . . . . 3  
 #                                           
 from datetime import datetime as dt, time
 from config.modules import Documentation, \
 Logging 
 from datetime import timedelta
 import decimal as dec
-import numbers
+import numbers, time as exmpl, chunk
 
 # Start classes 
 class Class1:
@@ -176,20 +180,29 @@ def testNestedDefInFunction(param1, param2: str):
     ''' Example one string with closing tag on new line
     ''' 
     # todo: example of todo 2
-    def returns1():
+    def returns1(param1:str) -> int:
         return 1
     
-    def returns2():
+    def returns2() -> int:
         ''' As the function says returns 
             two
         '''
         x = 1
         return 2
-    pass
+    
+    def returns3(param=3, \
+        param88=88
+        ):
+        return 3
+    
+    returns1()
+    returns2()
+    returns3()
 
 
-
-def func3(
+@test_decorator1
+@test_decorator2
+def decoratedAndMultiLine(
     param1,
     param2:str,
     param3={}
@@ -198,4 +211,5 @@ def func3(
             This is the second line 
     '''
     # TODO example of a todo
+    # A multi line todo
     return ''

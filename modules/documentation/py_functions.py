@@ -21,7 +21,7 @@ class PyFunctionDocs(Docs):
         return test_class
 
     @log.performance
-    def processPyFunctionDocs(self):
+    def processPyFunctionFlags(self):
         ''' Runs all of the flagging in order. When in doubt this is the correct order '''
         self.flagFunctions()
         self.flagFunctionParams()
@@ -53,7 +53,6 @@ class PyFunctionDocs(Docs):
                             # Technically we are starting a method here but since its not being
                             # declared we set it False
                             in_function = False
-                            line['flags'].append('decorated')
                             file['lines'][prev_line_w_text]['flags'].append('func end')
                             # Clear the extra flags from the blank lines
                             clear_flags = 'func'
@@ -74,7 +73,21 @@ class PyFunctionDocs(Docs):
                         line['flags'].append('func')
 
                 if in_function == False:
-                    # Look for the start of methods
+                    # Look for additional decorators
+                    if line.get('whitespace') == 0:
+                        
+                        first_char = line.get('line')[0] if len(line.get('line')) > 0 else ''
+                        
+                        if first_char == '@':
+                            # Technically we are starting a method here but since its not being
+                            # declared we set it False
+                            in_function = False
+                            line['flags'].append('decorated')
+                            # Clear the extra flags from the blank lines
+                            clear_flags = 'func'
+                            for i in range(prev_line_w_text + 1, line.get('line_no')):
+                                file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x != clear_flags ] 
+
                     if line.get('line')[0:4] == 'def ':                             
                         in_function = True
                         line['flags'].append('func start')
