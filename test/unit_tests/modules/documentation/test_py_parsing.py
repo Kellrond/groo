@@ -92,9 +92,9 @@ class TestDocsPyParsing(unittest.TestCase):
 
 
     def test_parse_classes(self):
-        self.print_docs()
+        # self.print_docs()
 
-        self.parser.debug_file_lines()
+        # self.parser.debug_file_lines()
 
         result = len(self.parser.classes)
         self.assertEqual(result, 3,'Parser got number of classes wrong')  

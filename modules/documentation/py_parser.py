@@ -162,7 +162,20 @@ class PyDocsParser(Docs):
                 - class_id: the parent function_id to be placed in the nested function object
                 - method_lists: a filtered list of lines containing relevant flags
         '''   
-        for method in method_lists:
+
+        # Split methods into their own lists
+        meth_list = []
+        meth_lines = []
+        for ln_dict in method_lists:
+            meth_lines.append(ln_dict)
+            flags = ln_dict.get('flags')
+            if 'meth end' in flags:
+                meth_list.append(meth_lines)
+                meth_lines = []
+
+        for method in meth_list:
+            print()
+            print("###",method)
             meth = {
                 'file_id': file.get('file_id'),
                 'class_id': class_id,
