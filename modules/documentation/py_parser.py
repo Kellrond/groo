@@ -38,12 +38,7 @@ class PyDocsParser(Docs):
         return test_class
 
     @log.performance
-    def parsePyDocs(self):
-        ''' Runs the flagging in the correct order. Though in this case order does not matter as much. '''
-        self.parseFilesToParts()
-
-    @log.performance
-    def parseFilesToParts(self):
+    def parsePython(self):
         ''' Takes the flagged lines and converts them into objects'''
 
         for file in self.file_lines:
@@ -62,12 +57,12 @@ class PyDocsParser(Docs):
                 if 'import' in flags or 'file docs' in flags or 'todo' in flags:
                     py_meta_lines.append(line)
 
-            self.parseClasses(file, py_class_lines)
-            self.parseFunctions(file, py_func_lines)
-            self.parseMeta(file, py_meta_lines)
+            self.__parse_classes(file, py_class_lines)
+            self.parse_functions(file, py_func_lines)
+            self.parse_meta(file, py_meta_lines)
 
     @log.performance
-    def parseClasses(self, file:dict, lines:list):
+    def __parse_classes(self, file:dict, lines:list):
         ''' Extract the class docs data like parameters, returns, docstring, methods, and nested methods.
             This is fed individual files at a time. 
         
@@ -136,7 +131,6 @@ class PyDocsParser(Docs):
                 elif 'cls docs' in flags:
                     cls['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
                     
-                
             # Format the docstring by cutting to the minimum whitespace
             if len(cls.get('docstring')) > 0:
                 min_wht_spc = min([x.get('whitespace') for x in cls.get('docstring') if x.get('line').strip() != ''])
@@ -322,7 +316,7 @@ class PyDocsParser(Docs):
 
 
     @log.performance
-    def parseFunctions(self, file:dict, lines:list):
+    def parse_functions(self, file:dict, lines:list):
         ''' Extract the function docs data like parameters, returns, docstring, nested functions.
             This is fed individual files. 
         
@@ -498,7 +492,7 @@ class PyDocsParser(Docs):
 
 
     @log.performance
-    def parseMeta(self, file:dict, lines:list):
+    def parse_meta(self, file:dict, lines:list):
         ''' Extract the meta data like file comments, imports and todo comment  s 
         
             Params: 

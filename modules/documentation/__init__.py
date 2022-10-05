@@ -29,7 +29,6 @@ class Docs:
     def __init__(self) -> None:
         self.config = modules.Documentation
 
-
     @classmethod
     @log.performance
     def from_test_conf(cls, config):
@@ -167,14 +166,21 @@ class Docs:
             filtered_file_path = filtered_file_path[dot_pos + 1:]
         return filtered_file_path == ext
         
-    @log.performance
-    def generateDocumentation(self, param_func) -> list:
-        document_list = []
-        for file_path in self.file_paths:
-            with open(file_path, 'r') as file:
-                lines = file.readlines()
-                routes_in_file = param_func(lines, file_path)
-                if len(routes_in_file) > 0:
-                    document_list += routes_in_file 
-        return document_list 
+@log.performance
+def generateDocumentation():
+    ''' Loads and runs all the documentation parts. When new file flaggers and parsers added
+        ensure they get added to this function.
+    '''
+    from modules.documentation import py_classes, py_functions, py_meta, py_parser
+
+    # Python documentation
+    classes = py_classes.PyClassesDocs()
+    funct   = py_functions.PyFunctionDocs()
+    meta    = py_meta.PyFileDocs()
+    parser  = py_parser.PyDocsParser()
+
+    classes.processPyClassFlags()
+    funct.processPyFunctionFlags()
+    meta.processPyFileFlags()
+    parser.parsePython()
 

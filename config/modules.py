@@ -1,7 +1,7 @@
 class Documentation:
     docs_ext_list = ['py', 'html', 'txt', 'sh', 'sql', 'js', 'css', 'md', 'wsgi', 'yml']
     docs_folder_list = ['config', 'database', 'modules', 'test'] 
-    file_export = 'docs/source_code/source_code_documentation.md'
+    file_export = 'docs/source_code/source_code_docs.txt'
 
 class Logging:
     # Set what level of logging you want. Level 2 includes 0 and 1 etc. 

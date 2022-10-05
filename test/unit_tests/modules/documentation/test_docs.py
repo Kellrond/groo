@@ -1,4 +1,3 @@
-import glob, os
 import unittest
 
 import  modules.documentation as documentation
@@ -10,6 +9,10 @@ class TestDocumentation(unittest.TestCase):
     def setUpClass(cls):
         # Turn off logging globally
         logging.Log.test_mode = True 
+        documentation.Docs.file_lines  = []
+        documentation.Docs.file_paths  = []
+        documentation.Docs.folder_list = []
+
         cls.docs = documentation.Docs.from_test_conf(t_config.modules.Documentation)
 
     @classmethod

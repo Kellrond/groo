@@ -1,5 +1,3 @@
-import glob, os
-from mailbox import linesep
 import unittest
 
 import  modules.documentation as documentation
@@ -19,6 +17,9 @@ class TestDocsPyParsing(unittest.TestCase):
     def setUpClass(cls):
         # Turn off logging globally
         logging.Log.test_mode = True 
+        py_meta.Docs.file_lines  = []
+        py_meta.Docs.file_paths  = []
+        py_meta.Docs.folder_list = []
         cls.docs = documentation.Docs.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
         cls.classDoc = py_classes.PyClassesDocs.from_test_conf(t_config.modules.Documentation)
@@ -33,7 +34,7 @@ class TestDocsPyParsing(unittest.TestCase):
         cls.fileDoc.processPyFileFlags()
         cls.classDoc.processPyClassFlags()
         cls.funcDoc.processPyFunctionFlags()
-        cls.parser.parseFilesToParts()
+        cls.parser.parsePython()
 
     @classmethod
     def tearDownClass(cls):
@@ -121,69 +122,3 @@ class TestDocsPyParsing(unittest.TestCase):
         self.assertEqual(len(test_dict.get('parameters')), 2,'Parser got number of nested method parameters wrong')
         self.assertEqual(len(test_dict.get('docstring')), 1,'Parser got nested method docstring wrong')
         self.assertEqual(test_dict.get('returns'), 'int','Parser got nested method return wrong')
-
-        self.print_docs()
-
-
-    def print_docs(self):
-        print("# TEST PARSE OUTPUT")
-        print()
-        # print(self.parser.file_docs[0].get('docs'))
-        print("\n## FOLDERS")
-        for c in self.parser.folder_list:
-            for k,v in c.items():
-                print(k,v,sep=": ", end="\t")
-            print()
-        print("\n## FILES")
-        for c in self.parser.file_lines:
-            for k,v in c.items():
-                if k == 'lines':
-                    continue
-                print(k,v,sep=": ", end="\t")
-            print() 
-        print('\n## IMPORTS\n')
-        for line in self.parser.imports:
-            if line.get('object') != None:
-                if line.get('alias') != None:              
-                    print(f"from {line.get('module')} import {line.get('obj')} as {line.get('alias')}")
-                else:
-                    print(f"from {line.get('module')} import {line.get('obj')}")
-            else:
-                if line.get('alias') != None:              
-                    print(f"import {line.get('module')} as {line.get('alias')}")
-                else:
-                    print(f"import {line.get('module')}")                
-        print()
-
-        print("\n## Classes")
-        for c in self.parser.classes:
-            superclass = c.get('superclass') if c.get('superclass') != [] else ''
-            print(f'''{c.get('name')}({",".join(c.get('parameters'))})   {superclass}''')
-            print("\t"+"\n\t".join(c.get('docstring')))
-            print('\n\n')
-            for fn in [x for x in self.parser.functions if x.get('class_id') == c.get('class_id')]:
-                if fn.get('returns') != None:
-                    return_str = f' -> {fn.get("returns")}:'
-                else:
-                    return_str = ':'
-                if len(fn.get('decorators')) > 0:
-                    for decorator in fn.get('decorators'):
-                        print(f'\t@{decorator}')
-
-                print(f'''\t{ fn.get('name') }({', '.join(fn.get('parameters'))}){ return_str }''')
-                [print(f"\t\t{x.get('line')}") for x in fn.get('docstring') ]
-                print('\n')
-            print('\n')
-
-        print('\n## FUNCTIONS\n')
-        for fn in [x for x in self.parser.functions if x.get('class_id') == None]:
-            if fn.get('returns') != None:
-                return_str = f' -> {fn.get("returns")}:'
-            else:
-                return_str = ':'
-            if len(fn.get('decorators')) > 0:
-                for decorator in fn.get('decorators'):
-                    print(f'@{decorator}')
-            print(f'''{ fn.get('name') }({', '.join(fn.get('parameters'))}){ return_str }''')
-            [print(f"\t{x.get('line')}") for x in fn.get('docstring') ]
-            print('\n\n')

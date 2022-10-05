@@ -1,8 +1,5 @@
-import glob, os
-from mailbox import linesep
 import unittest
 
-import  modules.documentation as documentation
 from  modules.documentation import py_functions
 
 from modules import logging
@@ -18,6 +15,9 @@ class TestDocsPyFunctions(unittest.TestCase):
     def setUpClass(cls):
         # Turn off logging globally
         logging.Log.test_mode = True 
+        py_functions.Docs.file_lines  = []
+        py_functions.Docs.file_paths  = []
+        py_functions.Docs.folder_list = []
         cls.funcDoc = py_functions.PyFunctionDocs.from_test_conf(t_config.modules.Documentation)
         cls.funcDoc.readLines()
         cls.funcDoc.processPyFunctionFlags()
