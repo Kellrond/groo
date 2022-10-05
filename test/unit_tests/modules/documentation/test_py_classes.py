@@ -79,6 +79,10 @@ class TestDocsPyClasses(unittest.TestCase):
         result = self.find_flags('meth return')
         self.assertEqual(result, 11, 'There should be 11 method return flags')
 
+    def test_find_method_decorators(self):
+        result = self.find_flags('decorated')
+        self.assertEqual(result, 2, 'There should be 2 method decorated flags')
+
     def test_find_nested_methods(self):
         result = self.find_flags('nest meth start')
         self.assertEqual(result, 3, 'There should be 3 nested method start flags')

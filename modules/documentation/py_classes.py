@@ -211,7 +211,8 @@ class PyClassesDocs(Docs):
                 if line.get('line').find(')') > -1 and in_method_params:
                     in_method_params = False
                     line['flags'].append('meth param end')
-
+                    if line.get('line').find('->') > -1:
+                        line['flags'].append('meth return')
     @log.performance
     def flagMethodDocstring(self):
         for file in self.file_lines:

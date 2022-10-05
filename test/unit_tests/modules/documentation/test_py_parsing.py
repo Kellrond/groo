@@ -53,6 +53,12 @@ class TestDocsPyParsing(unittest.TestCase):
                 count += 1
         return count
 
+    def find_dict_in_list(self, key:str, value:str, _list:list) -> dict:
+        ''' Finds a dictionary from a list of dictionaries by a key value pair'''
+        for obj in _list:
+            if obj.get(key) == value:
+                return obj
+
     # Meta python doc tests
     def test_parse_todos(self):
         todo2 = self.parser.todo[1]        
@@ -64,9 +70,9 @@ class TestDocsPyParsing(unittest.TestCase):
 
     def test_parse_imports(self):
         self.assertEqual(len(self.parser.imports), 9, 'Parser did not catch all the imports')
-        count = len([ x for x in self.parser.imports if x.get('alias') != ''])
+        count = len([ x for x in self.parser.imports if x.get('alias') != None])
         self.assertEqual(count, 3, 'Parser did not catch the aliases correctly on python imports')
-        count = len([ x for x in self.parser.imports if x.get('object') != ''])
+        count = len([ x for x in self.parser.imports if x.get('object') != None])
         self.assertEqual(count, 5, 'Parser did not get the objects right in a from import')
 
     def test_parse_file_docs(self):
@@ -76,26 +82,23 @@ class TestDocsPyParsing(unittest.TestCase):
         ''' Here functions will be function and nested functions. Not method functions or nested
             method functions. Those are tested separately
         '''
-        self.assertEqual(len(self.parser.functions), 6, 'Functions not parsed properly. Wrong numbers')
-        count = sum([1 for x in self.parser.functions if x.get('parent_id') != None])
+        self.assertEqual(sum([1 for x in self.parser.functions if x.get('class_id') == None]), 6, 'Functions not parsed properly. Wrong numbers')
+        count = sum([1 for x in self.parser.functions if x.get('parent_id') != None and x.get('class_id') == None])
         self.assertEqual(count, 3, 'Parser did not get the nested functions right')
-        count = len(self.parser.functions[0].get('parameters'))
-        self.assertEqual(count, 3, 'Parser got function parameters wrong')
-        result = len(self.parser.functions[1].get('docstring'))
-        self.assertEqual(result, 1,'Parser trimmed docstring wrong')
-        result = len(self.parser.functions[-1].get('docstring'))
-        self.assertEqual(result, 2,'Parser got multi-line docstring wrong')        
-        result = self.parser.functions[-1].get('returns')
-        self.assertEqual(result, 'str','Parser got function return wrong')  
-        result = len(self.parser.functions[-1].get('decorators'))
-        self.assertEqual(result, 2,'Parser got function decorators wrong')  
+        
+        test_dict = self.find_dict_in_list('name', 'testImportInFunction', self.parser.functions)
+        self.assertEqual(len(test_dict.get('parameters')), 3, 'Parser got function parameters wrong')
+        test_dict = self.find_dict_in_list('name', 'testNestedDefInFunction', self.parser.functions)
+        self.assertEqual(len(test_dict.get('docstring')), 1,'Parser trimmed docstring wrong')
+        
+        test_dict = self.find_dict_in_list('name', 'decoratedAndMultiLine', self.parser.functions)
+        self.assertEqual(len(test_dict.get('docstring')), 2,'Parser got multi-line docstring wrong')        
+        self.assertEqual(test_dict.get('returns'), 'str','Parser got function return wrong')  
+
+        self.assertEqual(len(test_dict.get('decorators')), 2,'Parser got function decorators wrong')  
 
 
     def test_parse_classes(self):
-        # self.print_docs()
-
-        # self.parser.debug_file_lines()
-
         result = len(self.parser.classes)
         self.assertEqual(result, 3,'Parser got number of classes wrong')  
         result = len(self.parser.classes[0].get('docstring'))
@@ -107,78 +110,80 @@ class TestDocsPyParsing(unittest.TestCase):
 
         # Class methods and nested methogs
         result = len([x for x in self.parser.functions if x.get('class_id') == 0])
-        self.assertEqual(result, 3,'Parser got number of methods wrong') 
+        self.assertEqual(result, 7,'Parser got number of methods wrong, __init__ counts as method') 
 
+        test_dict = self.find_dict_in_list('name', 'c1func2', self.parser.functions)
+        self.assertEqual(len(test_dict.get('parameters')), 2,'Parser got number of method parameters wrong')
+        self.assertEqual(len(test_dict.get('docstring')), 1,'Parser got method docstring wrong')
+        self.assertEqual(test_dict.get('returns'), 'str','Parser got method return wrong')
 
-        # result = len(self.parser.classes[-1].get(''))
-        # self.assertEqual(result, 2,'') 
-        # result = len(self.parser.classes[-1].get(''))
-        # self.assertEqual(result, 2,'') 
-        # result = len(self.parser.classes[-1].get(''))
-        # self.assertEqual(result, 2,'') 
-        # result = len(self.parser.classes[-1].get(''))
-        # self.assertEqual(result, 2,'') 
-        # result = len(self.parser.classes[-1].get(''))
-        # self.assertEqual(result, 2,'') 
+        test_dict = self.find_dict_in_list('name', 'nestedDef2', self.parser.functions)
+        self.assertEqual(len(test_dict.get('parameters')), 2,'Parser got number of nested method parameters wrong')
+        self.assertEqual(len(test_dict.get('docstring')), 1,'Parser got nested method docstring wrong')
+        self.assertEqual(test_dict.get('returns'), 'int','Parser got nested method return wrong')
 
-
-
-
-
-
-
-
+        self.print_docs()
 
 
     def print_docs(self):
-        print("TEST PARSE OUTPUT")
+        print("# TEST PARSE OUTPUT")
         print()
         # print(self.parser.file_docs[0].get('docs'))
-        print("\n=== FOLDERS")
-        for line in self.parser.folder_list:
-            for k,v in line.items():
+        print("\n## FOLDERS")
+        for c in self.parser.folder_list:
+            for k,v in c.items():
                 print(k,v,sep=": ", end="\t")
             print()
-        print("\n=== FILES")
-        for line in self.parser.file_lines:
-            for k,v in line.items():
+        print("\n## FILES")
+        for c in self.parser.file_lines:
+            for k,v in c.items():
                 if k == 'lines':
                     continue
                 print(k,v,sep=": ", end="\t")
-            print()
-        # print('\n=== IMPORTS')
-        # for line in self.parser.imports:
-        #     for k,v in line.items():
-        #         print(k,v,sep=": ", end="\t")
-        #     print()
+            print() 
+        print('\n## IMPORTS\n')
+        for line in self.parser.imports:
+            if line.get('object') != None:
+                if line.get('alias') != None:              
+                    print(f"from {line.get('module')} import {line.get('obj')} as {line.get('alias')}")
+                else:
+                    print(f"from {line.get('module')} import {line.get('obj')}")
+            else:
+                if line.get('alias') != None:              
+                    print(f"import {line.get('module')} as {line.get('alias')}")
+                else:
+                    print(f"import {line.get('module')}")                
+        print()
 
-        print("\n=== Classes")
-        for line in self.parser.classes:
-            for k,v in line.items():
-                if k == 'lines':
-                    continue
-                if k == 'docstring':
-                    continue
-                    if len(v) > 0:
-                        print(k,v[0],sep=": ", end="\t")
-                    else:
-                        print(k, end=':\t')
-                    continue
-                
-                print(k,v,sep=": ", end="\t")
-            print()
+        print("\n## Classes")
+        for c in self.parser.classes:
+            superclass = c.get('superclass') if c.get('superclass') != [] else ''
+            print(f'''{c.get('name')}({",".join(c.get('parameters'))})   {superclass}''')
+            print("\t"+"\n\t".join(c.get('docstring')))
+            print('\n\n')
+            for fn in [x for x in self.parser.functions if x.get('class_id') == c.get('class_id')]:
+                if fn.get('returns') != None:
+                    return_str = f' -> {fn.get("returns")}:'
+                else:
+                    return_str = ':'
+                if len(fn.get('decorators')) > 0:
+                    for decorator in fn.get('decorators'):
+                        print(f'\t@{decorator}')
 
+                print(f'''\t{ fn.get('name') }({', '.join(fn.get('parameters'))}){ return_str }''')
+                [print(f"\t\t{x.get('line')}") for x in fn.get('docstring') ]
+                print('\n')
+            print('\n')
 
-        # print('\n=== FUNCTIONS')
-        # for fn in [x for x in self.parser.functions if x.get('class_id') == None]:
-        #     if fn.get('returns') != None:
-        #         return_str = f' -> {fn.get("returns")}:'
-        #     else:
-        #         return_str = ':'
-        #     print(f'''file id: {fn.get('file_id')} function_id: {fn.get('function_id')} class_id: {fn.get('class_id')} parent_id: {fn.get('parent_id')} line start: {fn.get('line_start')} line count: {fn.get('line_count')}\n''')
-        #     if len(fn.get('decorators')) > 0:
-        #         for decorator in fn.get('decorators'):
-        #             print(f'@{decorator}')
-        #     print(f'''{ fn.get('name') }({', '.join(fn.get('parameters'))}){ return_str }''')
-        #     [print(f"\t{x.get('line')}") for x in fn.get('docstring') ]
-        #     print('\n---------------------------------------')
+        print('\n## FUNCTIONS\n')
+        for fn in [x for x in self.parser.functions if x.get('class_id') == None]:
+            if fn.get('returns') != None:
+                return_str = f' -> {fn.get("returns")}:'
+            else:
+                return_str = ':'
+            if len(fn.get('decorators')) > 0:
+                for decorator in fn.get('decorators'):
+                    print(f'@{decorator}')
+            print(f'''{ fn.get('name') }({', '.join(fn.get('parameters'))}){ return_str }''')
+            [print(f"\t{x.get('line')}") for x in fn.get('docstring') ]
+            print('\n\n')

@@ -112,8 +112,8 @@ class PyDocsParser(Docs):
                     if params_str.find(')') > -1:
                         params_str = params_str[:params_str.find(')')]
                         cls['parameters'] = [ x.strip() for x in params_str.split(',')]
-
-                if 'meth' in flags:
+                # Methods
+                if 'meth' in flags or 'decorated' in flags:
                     method_list.append(ln_dict)
                     continue # to next line, no more processing needed
 
@@ -122,12 +122,10 @@ class PyDocsParser(Docs):
                         cls['name'] = txt[6:txt.find('(')].strip()
                     else:
                         cls['name'] = txt[6:txt.find(':')].strip()
-
                 # Superclass
                 if 'super cls' in flags:
                     super_cls_str = txt[txt.find('(')+1:txt.find(')')]
                     cls['superclass'] = [x.strip() for x in super_cls_str.split(',')]
-
                 # Docstring
                 if 'cls docs start' in flags:
                     txt = txt.replace("'''",'   ').replace('"""', '   ')
@@ -147,6 +145,7 @@ class PyDocsParser(Docs):
 
                 while len(cls['docstring'][-1].get('line').strip()) == 0:
                     cls['docstring'].pop(-1)
+            cls['docstring'] = [ x.get('line') for x in cls.get('docstring')]
 
             self.classes.append(cls)
 
@@ -173,9 +172,7 @@ class PyDocsParser(Docs):
                 meth_list.append(meth_lines)
                 meth_lines = []
 
-        for method in meth_list:
-            print()
-            print("###",method)
+        for method in meth_list:     
             meth = {
                 'file_id': file.get('file_id'),
                 'class_id': class_id,
@@ -189,8 +186,137 @@ class PyDocsParser(Docs):
                 'line_start': method[0].get('line_no'),
                 'line_count': len(method)                
             }
+            nested_function_lines = []
+            nested_functions = []
+            for line in method:
+                flags = line.get('flags') 
+                txt = line.get('line')
+                if 'decorated' in flags:
+                    meth['decorators'].append(txt[line.get('whitespace')+1:])
+                if 'meth start' in flags:
+                    open_parameter_pos = txt.find('(')
+                    meth['name'] = txt[line.get('whitespace')+4:open_parameter_pos].strip()
 
-            ## Fill in the rest here............
+                # Parameters and returns
+                if 'meth param start' in flags:
+                    param_str = txt[txt.find('(')+1:]
+                    if 'meth param end' in flags:
+                        param_str = param_str[:param_str.find(')')]
+                        parameters = [ x.strip() for x in param_str.split(',') ]
+                        meth['parameters'] = parameters
+                elif 'meth param end' in flags:
+                    param_str += txt[:txt.find(')')]    
+                    parameters = [ x.strip() for x in param_str.split(',') ]
+                    meth['parameters'] = parameters
+                elif 'meth param' in flags:
+                    param_str += txt
+                if 'meth return' in flags:
+                    txt = txt[txt.find('->')+2:]
+                    return_str = txt[:txt.find(':')].strip()
+                    meth['returns'] = return_str
+
+                # Docstring
+                if 'meth docs start' in flags:
+                    txt = txt.replace("'''",'   ').replace('"""', '   ')
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+                elif  'meth docs end' in flags:
+                    txt = txt.replace("'''",'   ').replace('"""', '   ')
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+                elif 'meth docs' in flags:
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+                # Nested functions
+                if 'nest meth' in flags:
+                    nested_function_lines.append(line)
+                if 'nest meth end' in flags:
+                    nested_functions.append(nested_function_lines)
+                    nested_function_lines = []
+
+
+            # format the docstring by cutting to the minimum whitespace
+            if len(meth.get('docstring')) > 0:
+                min_wht_spc = min([x.get('whitespace') for x in meth.get('docstring') if x.get('line').strip() != ''])
+                for ds in meth['docstring']:
+                    ds['line'] = ds.get('line')[min_wht_spc:]
+                while len(meth['docstring'][-1].get('line').strip()) == 0:
+                    meth['docstring'].pop(-1)
+
+            self.functions.append(meth)
+            self.__nested_methods(file, func_id=meth.get('function_id'), class_id=meth.get('class_id'),nested_functions=nested_functions)
+            
+
+    @log.performance
+    def __nested_methods(self, file:dict, func_id:int, class_id:int, nested_functions:list):
+        ''' Splits out the logic for nested functions.  
+        
+            Params: 
+                - file: the file parameter from the function that called this
+                - func_id: the parent function_id to be placed in the nested function object
+                - class_id: the class this nested function is related to
+                - nested_functions: a filtered list of lines containing relevant flags
+        '''        
+        file_id = file.get('file_id')
+        for nest_meth in nested_functions:
+            meth = {
+                'file_id': file_id,
+                'class_id': class_id,
+                'parent_id': func_id,
+                'function_id': next(function_id_gen),
+                'name': '',
+                'parameters': [],
+                'returns': None,
+                'docstring': [],
+                'decorators': [], 
+                'line_start': nest_meth[0].get('line_no'),
+                'line_count': len(nest_meth)
+            }
+
+            for line in nest_meth:
+                flags = line.get('flags') 
+                txt = line.get('line')
+
+                if 'decorated' in flags:
+                    meth['decorators'].append(txt[1:])
+                if 'nest meth start' in flags:
+                    open_parameter_pos = txt.find('(')
+                    meth['name'] = txt[line.get('whitespace')+4:open_parameter_pos].strip()
+
+                # Parameters and returns
+                if 'nest meth param start' in flags:
+                    param_str = txt[txt.find('(')+1:].replace('\\','')
+                    if 'nest meth param end' in flags:
+                        param_str = param_str[:param_str.find(')')]
+                        parameters = [ x.strip() for x in param_str.split(',') ]
+                        if parameters != ['']:
+                            meth['parameters'] = parameters
+                elif 'nest meth param end' in flags:
+                    param_str += txt[:txt.find(')')]    
+                    parameters = [ x.strip() for x in param_str.split(',') ]
+                    if parameters != ['']:
+                        meth['parameters'] = parameters
+                elif 'nest meth param' in flags:
+                    param_str += txt.replace('\\','')
+
+                if 'nest meth return' in flags:
+                    txt = txt[txt.find('->')+2:]
+                    return_str = txt[:txt.find(':')].strip()
+                    meth['returns'] = return_str
+
+                # Docstring
+                if 'nest meth docs start' in flags:
+                    txt = txt.replace("'''",'   ').replace('"""', '   ')
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+                elif 'nest meth docs end' in flags:
+                    txt = txt.replace("'''",'   ').replace('"""', '   ')
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+                elif 'nest meth docs' in flags:
+                    meth['docstring'].append({'whitespace': len(txt) - len(txt.lstrip()), 'line': txt})
+
+            # format the docstring by cutting to the minimum whitespace
+            if len(meth.get('docstring')) > 0:
+
+                min_wht_spc = min([x.get('whitespace') for x in meth.get('docstring') if x.get('line').strip() != ''])
+                for ds in meth['docstring']:
+                    ds['line'] = ds.get('line')[min_wht_spc:]
 
             self.functions.append(meth)
 
@@ -252,15 +378,18 @@ class PyDocsParser(Docs):
                     if 'func param end' in flags:
                         param_str = param_str[:param_str.find(')')]
                         parameters = [ x.strip() for x in param_str.split(',') ]
-                        func['parameters'] = parameters
+                        if parameters != ['']:
+                            func['parameters'] = parameters
                 elif 'func param end' in flags:
                     param_str += txt[:txt.find(')')]    
                     parameters = [ x.strip() for x in param_str.split(',') ]
-                    func['parameters'] = parameters
+                    if parameters != ['']:
+                        func['parameters'] = parameters
                 elif 'func param' in flags:
                     param_str += txt
                 if 'func return' in flags:
-                    return_str = txt[txt.find('->')+2:txt.find(':')].strip()
+                    txt = txt[txt.find('->')+2:]
+                    return_str = txt[:txt.find(':')].strip()
                     func['returns'] = return_str
 
                 # Docstring
@@ -333,11 +462,13 @@ class PyDocsParser(Docs):
                     if 'nest func param end' in flags:
                         param_str = param_str[:param_str.find(')')]
                         parameters = [ x.strip() for x in param_str.split(',') ]
-                        func['parameters'] = parameters
+                        if parameters != ['']:
+                            func['parameters'] = parameters
                 elif 'nest func param end' in flags:
                     param_str += txt[:txt.find(')')]    
                     parameters = [ x.strip() for x in param_str.split(',') ]
-                    func['parameters'] = parameters
+                    if parameters != ['']:
+                        func['parameters'] = parameters
                 elif 'nest func param' in flags:
                     param_str += txt.replace('\\','')
 
@@ -423,17 +554,17 @@ class PyDocsParser(Docs):
                     if multi_line_import: # The last item will be the line continuation \. remove it
                         object_list.pop(-1)
                     for obj in object_list:
-                        alias = ''
+                        alias = None
                         if obj.find('as') > -1:
-                            obj, alias = obj.split('as')
+                            obj, alias = [ x.strip() for x in obj.split('as') ]
                         self.imports.append(
                             {
                                 'import_id': next(import_id_gen), 
                                 'file_id': file_id, 
                                 'line_no': ln_no,
                                 'module': module,
-                                'object': obj.strip(), 
-                                'alias': alias.strip()
+                                'object': obj, 
+                                'alias': alias
                                 }
                             )   
                 else:
@@ -444,17 +575,17 @@ class PyDocsParser(Docs):
                         trim_line = line[7:].lstrip()
                         module_list = trim_line.split(',')
                         for module in module_list:
-                            alias = ''
+                            alias = None
                             if module.find('as') > -1:
-                                module, alias = module.split('as')
+                                module, alias = [ x.strip() for x in module.split('as') ]
                             self.imports.append(
                                 {
                                     'import_id': next(import_id_gen), 
                                     'file_id': file_id, 
                                     'line_no': ln_no,
-                                    'module': module.strip(),
-                                    'object': '', 
-                                    'alias': alias.strip()
+                                    'module': module,
+                                    'object': None, 
+                                    'alias': alias
                                     }
                                 )                            
                     if line[:5] == 'from ':
@@ -466,17 +597,17 @@ class PyDocsParser(Docs):
                         if multi_line_import: # The last item will be the line continuation \. remove it
                             object_list.pop(-1)
                         for obj in object_list:
-                            alias = ''
+                            alias = None
                             if obj.find('as') > -1:
-                                obj, alias = obj.split('as')
+                                obj, alias = [ x.strip() for x in obj.split('as') ]
                             self.imports.append(
                                 {
                                     'import_id': next(import_id_gen), 
                                     'file_id': file_id, 
                                     'line_no': ln_no,
                                     'module': module,
-                                    'object': obj.strip(), 
-                                    'alias': alias.strip()
+                                    'object': obj, 
+                                    'alias': alias
                                     }
                                 )   
         # End of for loop through file lines

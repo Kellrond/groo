@@ -80,21 +80,21 @@ class Class1:
 
 
     @classmethod
-    def c1func1(cls, param1:str) -> list:
+    def c1func1(cls, param1:str):
         ''' Example one line docstring. Also a class method'''
         return []
 
 
     @staticmethod
-    def c1func2(param1:dict, param2=False):
+    def c1func2(param1:dict, param2=False) -> str:
         ''' Example one string with closing tag on new line. Also a static method
         '''
-        def nestedDef1(param1) -> int:
+        def nestedDef1(param1):
             ''' This is an example of a nested function '''
             return 1
 
         def nestedDef2(param2, \
-            new_line='\n'):
+            new_line='\n') -> int:
             ''' And this is another example
             '''
             return 2
@@ -124,16 +124,16 @@ class Class2(Class1):
         self.param4 = param4
         super().__init__(param1, param2, param3)
 
-    def c1func1(self, param1:str) -> list:
+    def c2func1(self, param1:str) -> list:
         ''' Example one line docstring'''
         return []
 
-    def c1func2(self, param1:dict, param2=False) -> str:
+    def c2func2(self, param1:dict, param2=False) -> str:
         ''' Example one string with closing tag on new line
         '''
         return ''
 
-    def c3func3(
+    def c2func3(
         self,
         param1:list,
         param2:str,
@@ -155,11 +155,11 @@ class Class3(Class1, Class1):
     def __init__(self, param1:str, param2:dict, param3:False) -> None:
         self.param1 = param1
 
-    def c1func1(self, param1:str) -> list:
+    def c3func1(self, param1:str) -> list:
         ''' Example one line docstring'''
         return []
 
-    def c1func2(self, param1:dict, param2=False) -> str:
+    def c3func2(self, param1:dict, param2=False) -> str:
         ''' Example one string with closing tag on new line
         '''
         return ''
@@ -176,7 +176,7 @@ class Class3(Class1, Class1):
         return {}
 
 
-def testNestedDefInFunction(param1, param2: str):
+def testNestedDefInFunction():
     ''' Example one string with closing tag on new line
     ''' 
     # todo: example of todo 2
