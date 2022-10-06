@@ -225,7 +225,6 @@ class PyDocsParser(Docs):
                     nested_functions.append(nested_function_lines)
                     nested_function_lines = []
 
-
             # format the docstring by cutting to the minimum whitespace
             if len(meth.get('docstring')) > 0:
                 min_wht_spc = min([x.get('whitespace') for x in meth.get('docstring') if x.get('line').strip() != ''])
@@ -233,6 +232,8 @@ class PyDocsParser(Docs):
                     ds['line'] = ds.get('line')[min_wht_spc:]
                 while len(meth['docstring'][-1].get('line').strip()) == 0:
                     meth['docstring'].pop(-1)
+
+            meth['docstring'] = [x.get('line') for x in meth.get('docstring')]
 
             self.functions.append(meth)
             self.__nested_methods(file, func_id=meth.get('function_id'), class_id=meth.get('class_id'),nested_functions=nested_functions)
@@ -307,10 +308,10 @@ class PyDocsParser(Docs):
 
             # format the docstring by cutting to the minimum whitespace
             if len(meth.get('docstring')) > 0:
-
                 min_wht_spc = min([x.get('whitespace') for x in meth.get('docstring') if x.get('line').strip() != ''])
                 for ds in meth['docstring']:
                     ds['line'] = ds.get('line')[min_wht_spc:]
+            meth['docstring'] = [x.get('line') for x in meth.get('docstring')]
 
             self.functions.append(meth)
 
@@ -410,6 +411,7 @@ class PyDocsParser(Docs):
                 while len(func['docstring'][-1].get('line').strip()) == 0:
                     func['docstring'].pop(-1)
 
+            func['docstring'] = [x.get('line') for x in func.get('docstring')]
             self.functions.append(func)
 
             self.__nested_functions(file, func.get('function_id'), nested_functions)
@@ -487,7 +489,7 @@ class PyDocsParser(Docs):
                 min_wht_spc = min([x.get('whitespace') for x in func.get('docstring') if x.get('line').strip() != ''])
                 for ds in func['docstring']:
                     ds['line'] = ds.get('line')[min_wht_spc:]
-
+            func['docstring'] = [x.get('line') for x in func.get('docstring')]
             self.functions.append(func)
 
 
@@ -549,8 +551,8 @@ class PyDocsParser(Docs):
                         object_list.pop(-1)
                     for obj in object_list:
                         alias = None
-                        if obj.find('as') > -1:
-                            obj, alias = [ x.strip() for x in obj.split('as') ]
+                        if obj.find(' as ') > -1:
+                            obj, alias = [ x.strip() for x in obj.split(' as ') ]
                         self.imports.append(
                             {
                                 'import_id': next(import_id_gen), 
@@ -570,8 +572,8 @@ class PyDocsParser(Docs):
                         module_list = trim_line.split(',')
                         for module in module_list:
                             alias = None
-                            if module.find('as') > -1:
-                                module, alias = [ x.strip() for x in module.split('as') ]
+                            if module.find(' as ') > -1:
+                                module, alias = [ x.strip() for x in module.split(' as ') ]
                             self.imports.append(
                                 {
                                     'import_id': next(import_id_gen), 
@@ -592,8 +594,8 @@ class PyDocsParser(Docs):
                             object_list.pop(-1)
                         for obj in object_list:
                             alias = None
-                            if obj.find('as') > -1:
-                                obj, alias = [ x.strip() for x in obj.split('as') ]
+                            if obj.find(' as ') > -1:
+                                obj, alias = [ x.strip() for x in obj.split(' as ') ]
                             self.imports.append(
                                 {
                                     'import_id': next(import_id_gen), 
@@ -620,8 +622,9 @@ class PyDocsParser(Docs):
                     line['line'].replace("'''", '   ')
                 doc_list.append(line.get('line'))
         
-        while doc_list[-1].strip() == '':
-            doc_list.pop(-1)
+        if len(doc_list) > 0:
+            while doc_list[-1].strip() == '':
+                doc_list.pop(-1)
 
         self.file_docs.append({
             'file_id': file_id,

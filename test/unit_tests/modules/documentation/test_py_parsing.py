@@ -20,6 +20,15 @@ class TestDocsPyParsing(unittest.TestCase):
         py_meta.Docs.file_lines  = []
         py_meta.Docs.file_paths  = []
         py_meta.Docs.folder_list = []
+        py_parser.PyDocsParser.folders = []
+        py_parser.PyDocsParser.files   = [] 
+        py_parser.PyDocsParser.classes = []
+        py_parser.PyDocsParser.functions = []
+        py_parser.PyDocsParser.file_docs = []
+        py_parser.PyDocsParser.imports = []
+        py_parser.PyDocsParser.todo = []
+
+
         cls.docs = documentation.Docs.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
         cls.classDoc = py_classes.PyClassesDocs.from_test_conf(t_config.modules.Documentation)
@@ -110,7 +119,8 @@ class TestDocsPyParsing(unittest.TestCase):
         self.assertEqual(result, 2,'Parser for superclasses wrong') 
 
         # Class methods and nested methogs
-        result = len([x for x in self.parser.functions if x.get('class_id') == 0])
+        test_dict = self.find_dict_in_list('name', 'Class1', self.parser.classes)
+        result = len([x for x in self.parser.functions if x.get('class_id') == test_dict.get('class_id')])
         self.assertEqual(result, 7,'Parser got number of methods wrong, __init__ counts as method') 
 
         test_dict = self.find_dict_in_list('name', 'c1func2', self.parser.functions)

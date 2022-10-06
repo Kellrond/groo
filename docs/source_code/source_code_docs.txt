@@ -1,0 +1,2010 @@
+█▀▀ █▀█ █▀█ █ █ █                                                    Oct 05 2022
+█▄█ █▀▄ █▄█ ▀▄▀▄▀                                      Source code documentation
+--------------------------------------------------------------------------------
+
+This is a basic version of the documentation if you want to use search over it
+It's a double edged sword since a text version will interfere with grep however,
+using notepad ++, vs code, word or other text tools will be easier for others. 
+
+The overall structure will be to show the list of folders and files and then show
+the relevant documentation within that file.
+
+
+File and folder structure
+================================================================================
+
+   config/
+      - config/__init__.py
+      - config/modules.py
+      - config/db.py
+   database/
+      - database/docs_db.py
+      - database/__init__.py
+   database/scripts/
+      - database/scripts/schema.sql
+   modules/
+      - modules/utilities.py
+      - modules/__init__.py
+   modules/logging/
+      - modules/logging/__init__.py
+   modules/documentation/
+      - modules/documentation/export_docs.py
+      - modules/documentation/__init__.py
+      - modules/documentation/py_meta.py
+      - modules/documentation/py_parser.py
+      - modules/documentation/py_classes.py
+      - modules/documentation/py_functions.py
+   test/
+      - test/__init__.py
+      - test/readme.md
+   test/unit_tests/
+      - test/unit_tests/__init__.py
+      - test/unit_tests/test_database.py
+   test/unit_tests/modules/
+      - test/unit_tests/modules/test_logging.py
+      - test/unit_tests/modules/__init__.py
+   test/unit_tests/modules/documentation/
+      - test/unit_tests/modules/documentation/test_py_classes.py
+      - test/unit_tests/modules/documentation/test_docs.py
+      - test/unit_tests/modules/documentation/test_docs_export.py
+      - test/unit_tests/modules/documentation/test_py_parsing.py
+      - test/unit_tests/modules/documentation/__init__.py
+      - test/unit_tests/modules/documentation/test_py_function.py
+      - test/unit_tests/modules/documentation/test_py_meta.py
+   test/test_data/
+   test/test_data/documentation/
+      - test/test_data/documentation/demo.py
+   test/test_data/logs/
+   test/t_config/
+      - test/t_config/__init__.py
+      - test/t_config/modules.py
+      - test/t_config/db.py
+
+
+Source code documentation
+================================================================================
+
+################################################################################
+#  Folder  #   config/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      config/__init__.py
+--------------------------------------------------------------------------------
+
+
+
+from config import  db
+from config import  modules
+from config import  db
+from config import  modules
+
+
+--------------------------------------------------------------------------------
+      config/modules.py
+--------------------------------------------------------------------------------
+
+
+
+
+################################################################################
+#  Classes
+################################################################################
+
+Documentation()
+
+Logging()
+
+Documentation()
+
+Logging()
+
+
+
+--------------------------------------------------------------------------------
+      config/db.py
+--------------------------------------------------------------------------------
+
+
+
+
+################################################################################
+#  Classes
+################################################################################
+
+GrowDb()
+
+GrowDb()
+
+
+
+################################################################################
+#  Folder  #   database/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      database/docs_db.py
+--------------------------------------------------------------------------------
+
+
+
+from www import  config
+from database import  db
+from www import  config
+from database import  db
+
+
+   paginateDocs(lvl1, lvl2, lvl3, lvl4, lvl5, lvl6, page=1) -> dict:
+
+
+   paginateImportDependancies() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   paginateRoutes() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   paginateStats() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   dropAllDocs() -> bool:
+      When rebuilding the documentation we dont want to keep the old    
+
+
+   getDocFolderIdFromFilePath(file_path):
+
+
+   getDocFileIdFromFilePath(file_path):
+
+
+   updateDocRoutesDb(routes) -> bool:
+      Adds to the documentation for routes    
+
+
+   updateDocClassesDb(classes) -> bool:
+      Adds to the documentation for classes    
+
+
+   updateDocFilesDb(file_paths) -> bool:
+
+
+   updateDocFunctionsDb(functions) -> bool:
+      Adds to the documentation for functions    
+
+
+   updateDocFolderDb(folders) -> bool:
+      Adds to the documentation for functions    
+
+
+   updateDocDependencyDb(depenancies) -> bool:
+      Adds to the documentation for dependencies    
+
+
+   paginateDocs(lvl1, lvl2, lvl3, lvl4, lvl5, lvl6, page=1) -> dict:
+
+
+   paginateImportDependancies() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   paginateRoutes() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   paginateStats() -> dict:
+      Does not paginate. Displays all on one page    
+
+
+   dropAllDocs() -> bool:
+      When rebuilding the documentation we dont want to keep the old    
+
+
+   getDocFolderIdFromFilePath(file_path):
+
+
+   getDocFileIdFromFilePath(file_path):
+
+
+   updateDocRoutesDb(routes) -> bool:
+      Adds to the documentation for routes    
+
+
+   updateDocClassesDb(classes) -> bool:
+      Adds to the documentation for classes    
+
+
+   updateDocFilesDb(file_paths) -> bool:
+
+
+   updateDocFunctionsDb(functions) -> bool:
+      Adds to the documentation for functions    
+
+
+   updateDocFolderDb(folders) -> bool:
+      Adds to the documentation for functions    
+
+
+   updateDocDependencyDb(depenancies) -> bool:
+      Adds to the documentation for dependencies    
+
+
+--------------------------------------------------------------------------------
+      database/__init__.py
+--------------------------------------------------------------------------------
+ External dependencies
+
+
+import config.db
+from modules import  logging
+import psycopg2
+import  traceback
+import config.db
+from modules import  logging
+import psycopg2
+import  traceback
+
+################################################################################
+#  Classes
+################################################################################
+
+Db(self)
+
+   Database class that handles connection to the database. Much of this is
+   a wrapper around psycopg2 so some methods are just mirroring 
+   
+   By default commits occur after every method call where needed. We want to 
+   capture as much data as we can. A bad output from one function or sensor 
+   should not prevent other data from being written. Transactions should be 
+   as small as possible.
+   
+   conn:
+       connection to the database. Or more accurately a connection to psycopg2
+       This abstraction exists to make switching to another database vendor a 
+       little easier. 
+   
+       `conn == None` is the tell that there is no connection to the database.
+       That is not how to close a connection. Please use the close() method.
+
+
+
+   __init__(self) -> None:
+
+
+   __del__(self):
+      If the object is deleted via `del db` close the connection to avoid 
+      leftover database connections. 
+
+
+   from_test_conf(cls, config):
+      Instantiates a class using the test configuration passed in.    
+
+
+   commit(self):
+      Commit the last set of statements to the database    
+
+
+   connect(self):
+      If inactive open a connection to the database    
+
+
+   close(self):
+      If active close the database connection    
+
+
+   createTable(self, table: dict, drop_if_exists=False) -> None:
+      Create a table from the dictionary passed in 
+      
+      The dictionary must contain the key value pair of
+      `'__table__': 'example_name'`
+      
+      The rest of the items in the dictionary should be in key value pairs. 
+      
+      Usage:
+          `dict = { 
+              '__table__': 'example_name',
+              'id': 'SERIAL PRIMARY KEY',
+              'col1': INTEGER,
+              'col2': TEXT  
+          }
+          db.createTable(dict)
+          `
+      
+      Params:
+          - table: the dictionary as described above 
+          - drop_if_exists: drops an existing table. False by default to prevent 
+            accidental data loss
+
+
+   nextId(self, table_name: str):
+      Get the next id in a sequence. Be aware of table with serial or
+      auto-incrementing primary keys. They do not get passed keys as they generate
+      their own.  
+      
+      Returns None if passed a table with multiple primary keys, a serialized key,
+      or the table does not exist.
+      
+      Params:
+          - table_name: just pass in the table name and the rest will get discovered
+
+
+   getPrimaryKeysFromTable(self, table_name: str) -> list:
+      The primary keys a good details to have when working with a table
+      
+      My recommendation for primary keys it to use SERIAL PRIMARY KEY
+      This is more performant and saves having to get the next Id 
+      
+      Params:
+          - table_name: just the name of a table
+
+
+   query(self, sql: str) -> list:
+      Query the database, returns a dictionary
+      
+      Some data types may need processing upon return. Notably JSON
+      will get returned as a json string. 
+
+
+   queryOne(self, sql: str) -> dict:
+      Like query() but returns a single record as a dictionary
+      
+      Params:
+          - sql: Statement must start with SELECT 
+
+
+   scalar(self, sql):
+      Returns a scalar (single element) result. SQL statement passed in must return 
+      only one row. If multiple columns are returned it will return the value in the 
+      first column.
+      
+      `db.scalar('SELECT sum(val) FROM examp_tbl')` 
+      
+      Params:
+          -sql: SQL statement must only return a single value. If
+
+
+   execute(self, sql: str, autoCommit=True) -> bool:
+      Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. 
+      
+      Params:
+          - sql: any SQL statement which does not return a result
+          - autoCommit=True: set to false when you must ensure all events pass or none at all 
+
+
+   add(self, dbo: dict or list, single_transaction=True):
+      Add one or many row. Rows are inserted individually so in a list of
+      records you may insert to multiple rows at a time. 
+      
+      Security note:
+          Using `add()` will avoid SQL injection attacks due to the parameterization of the input values.
+          If you are exposing this to the internet, you should always consider injection attacks. Taking 
+          a reading from a sensor and writing that value directly to an insert statement is not dangerous.
+          But you should think twice if dealing with anything with human input.  
+      
+      Params:
+          - data: either a dict or a list of dicts. DICTIONARIES MUST HAVE '__table__': 'table_name'
+          - single_transaction: when left at the True default, commits at the end of all the inserts
+            this is to help ensure data integrity. If keeping all data at all cost is your preference 
+            set this to False.       
+
+
+
+Db(self)
+
+   Database class that handles connection to the database. Much of this is
+   a wrapper around psycopg2 so some methods are just mirroring 
+   
+   By default commits occur after every method call where needed. We want to 
+   capture as much data as we can. A bad output from one function or sensor 
+   should not prevent other data from being written. Transactions should be 
+   as small as possible.
+   
+   conn:
+       connection to the database. Or more accurately a connection to psycopg2
+       This abstraction exists to make switching to another database vendor a 
+       little easier. 
+   
+       `conn == None` is the tell that there is no connection to the database.
+       That is not how to close a connection. Please use the close() method.
+
+
+
+   __init__(self) -> None:
+
+
+   __del__(self):
+      If the object is deleted via `del db` close the connection to avoid 
+      leftover database connections. 
+
+
+   from_test_conf(cls, config):
+      Instantiates a class using the test configuration passed in.    
+
+
+   commit(self):
+      Commit the last set of statements to the database    
+
+
+   connect(self):
+      If inactive open a connection to the database    
+
+
+   close(self):
+      If active close the database connection    
+
+
+   createTable(self, table: dict, drop_if_exists=False) -> None:
+      Create a table from the dictionary passed in 
+      
+      The dictionary must contain the key value pair of
+      `'__table__': 'example_name'`
+      
+      The rest of the items in the dictionary should be in key value pairs. 
+      
+      Usage:
+          `dict = { 
+              '__table__': 'example_name',
+              'id': 'SERIAL PRIMARY KEY',
+              'col1': INTEGER,
+              'col2': TEXT  
+          }
+          db.createTable(dict)
+          `
+      
+      Params:
+          - table: the dictionary as described above 
+          - drop_if_exists: drops an existing table. False by default to prevent 
+            accidental data loss
+
+
+   nextId(self, table_name: str):
+      Get the next id in a sequence. Be aware of table with serial or
+      auto-incrementing primary keys. They do not get passed keys as they generate
+      their own.  
+      
+      Returns None if passed a table with multiple primary keys, a serialized key,
+      or the table does not exist.
+      
+      Params:
+          - table_name: just pass in the table name and the rest will get discovered
+
+
+   getPrimaryKeysFromTable(self, table_name: str) -> list:
+      The primary keys a good details to have when working with a table
+      
+      My recommendation for primary keys it to use SERIAL PRIMARY KEY
+      This is more performant and saves having to get the next Id 
+      
+      Params:
+          - table_name: just the name of a table
+
+
+   query(self, sql: str) -> list:
+      Query the database, returns a dictionary
+      
+      Some data types may need processing upon return. Notably JSON
+      will get returned as a json string. 
+
+
+   queryOne(self, sql: str) -> dict:
+      Like query() but returns a single record as a dictionary
+      
+      Params:
+          - sql: Statement must start with SELECT 
+
+
+   scalar(self, sql):
+      Returns a scalar (single element) result. SQL statement passed in must return 
+      only one row. If multiple columns are returned it will return the value in the 
+      first column.
+      
+      `db.scalar('SELECT sum(val) FROM examp_tbl')` 
+      
+      Params:
+          -sql: SQL statement must only return a single value. If
+
+
+   execute(self, sql: str, autoCommit=True) -> bool:
+      Execute a SQL statement which does not return a result. ie. DELETE, UPDATE, etc. 
+      
+      Params:
+          - sql: any SQL statement which does not return a result
+          - autoCommit=True: set to false when you must ensure all events pass or none at all 
+
+
+   add(self, dbo: dict or list, single_transaction=True):
+      Add one or many row. Rows are inserted individually so in a list of
+      records you may insert to multiple rows at a time. 
+      
+      Security note:
+          Using `add()` will avoid SQL injection attacks due to the parameterization of the input values.
+          If you are exposing this to the internet, you should always consider injection attacks. Taking 
+          a reading from a sensor and writing that value directly to an insert statement is not dangerous.
+          But you should think twice if dealing with anything with human input.  
+      
+      Params:
+          - data: either a dict or a list of dicts. DICTIONARIES MUST HAVE '__table__': 'table_name'
+          - single_transaction: when left at the True default, commits at the end of all the inserts
+            this is to help ensure data integrity. If keeping all data at all cost is your preference 
+            set this to False.       
+
+
+
+
+
+################################################################################
+#  Folder  #   database/scripts/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      database/scripts/schema.sql
+--------------------------------------------------------------------------------
+
+
+
+
+
+################################################################################
+#  Folder  #   modules/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      modules/utilities.py
+--------------------------------------------------------------------------------
+
+
+
+
+
+   generateIntegerSequence() -> int:
+      By creating a generator function we can generate a chain of executions in the performance log and 
+      get a form of stack trace out of it. 
+
+
+   generateIntegerSequence() -> int:
+      By creating a generator function we can generate a chain of executions in the performance log and 
+      get a form of stack trace out of it. 
+
+
+--------------------------------------------------------------------------------
+      modules/__init__.py
+--------------------------------------------------------------------------------
+ This file intentionally blank
+
+
+
+
+################################################################################
+#  Folder  #   modules/logging/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      modules/logging/__init__.py
+--------------------------------------------------------------------------------
+ External dependancies
+
+
+import config
+from modules import  utilities
+import datetime as dt
+from glob import  glob
+from time import  perf_counter
+import os
+import  psycopg2
+import config
+from modules import  utilities
+import datetime as dt
+from glob import  glob
+from time import  perf_counter
+import os
+import  psycopg2
+
+
+################################################################################
+#  Folder  #   modules/documentation/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      modules/documentation/export_docs.py
+--------------------------------------------------------------------------------
+
+
+
+import modules.documentation as documentation
+from modules.documentation import  py_parser
+from datetime import datetime as dt
+import modules.documentation as documentation
+from modules.documentation import  py_parser
+from datetime import datetime as dt
+
+
+   toTxt(write_path):
+      Writes the documentation to a plaintext file. Might get in the way of grep so perhaps 
+      the file gets moved after creation? 
+      
+      Params:
+          - write_path: the filepath for the documentation to end up. 
+
+
+   toTxt(write_path):
+      Writes the documentation to a plaintext file. Might get in the way of grep so perhaps 
+      the file gets moved after creation? 
+      
+      Params:
+          - write_path: the filepath for the documentation to end up. 
+
+
+--------------------------------------------------------------------------------
+      modules/documentation/__init__.py
+--------------------------------------------------------------------------------
+
+
+
+from config import  modules
+from modules import  logging
+from glob import  glob
+from config import  modules
+from modules import  logging
+from glob import  glob
+
+################################################################################
+#  Classes
+################################################################################
+
+Docs(self)
+
+   Superclass for other documentation classes. Primarily builds and maintains a file list 
+   which is shared by the classes. 
+   
+   Notes:
+       - file lines start on zero to make math easy in python. If it's ever going to be displayed 
+         as code this should be adjusted only then. 
+
+
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class   
+
+
+   generateFolderList(self):
+      Loads a list of folders and sub folders to the folder list based on the folders listed
+      in the config file. 
+
+
+   generateFilePaths(self):
+      Globs the files with the extensions listed in the config file from the folder list
+      gathered in self.generateFolderList()
+
+
+   readLines(self):
+      Reads the lines of the files generated in self.generateFilePaths    
+
+
+   debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
+      Used to debug / view the output of the function
+      
+      Params:
+          - find_filter: `[ f for f in line.get('flags') if f.find(find_filter)]`
+            to get all class flags just used 'class' else be specific 'class start'
+          - start_pos: defaults to 0 as the line to start printing on 
+          - end_pos: defaults as None for end_pos as the line to stop printing on 
+          - file: defaults to the demo python documentation file
+
+
+   isFileOfExtension(self, file:dict, ext:str) -> bool:
+      Returns True or False if the file is of the desired extension    
+
+
+
+Docs(self)
+
+   Superclass for other documentation classes. Primarily builds and maintains a file list 
+   which is shared by the classes. 
+   
+   Notes:
+       - file lines start on zero to make math easy in python. If it's ever going to be displayed 
+         as code this should be adjusted only then. 
+
+
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class   
+
+
+   generateFolderList(self):
+      Loads a list of folders and sub folders to the folder list based on the folders listed
+      in the config file. 
+
+
+   generateFilePaths(self):
+      Globs the files with the extensions listed in the config file from the folder list
+      gathered in self.generateFolderList()
+
+
+   readLines(self):
+      Reads the lines of the files generated in self.generateFilePaths    
+
+
+   debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
+      Used to debug / view the output of the function
+      
+      Params:
+          - find_filter: `[ f for f in line.get('flags') if f.find(find_filter)]`
+            to get all class flags just used 'class' else be specific 'class start'
+          - start_pos: defaults to 0 as the line to start printing on 
+          - end_pos: defaults as None for end_pos as the line to stop printing on 
+          - file: defaults to the demo python documentation file
+
+
+   isFileOfExtension(self, file:dict, ext:str) -> bool:
+      Returns True or False if the file is of the desired extension    
+
+
+
+
+
+   generateDocumentation():
+      Loads and runs all the documentation parts. When new file flaggers and parsers added
+      ensure they get added to this function.
+
+
+   generateDocumentation():
+      Loads and runs all the documentation parts. When new file flaggers and parsers added
+      ensure they get added to this function.
+
+
+--------------------------------------------------------------------------------
+      modules/documentation/py_meta.py
+--------------------------------------------------------------------------------
+ from database import docs_db
+
+
+from modules.documentation import  Docs
+from modules import  logging
+from modules.documentation import  Docs
+from modules import  logging
+
+################################################################################
+#  Classes
+################################################################################
+
+PyFileDocs(self)
+   Superclass: Docs
+
+   File comments reside at the top of a file before the imports 
+
+
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyFileFlags(self):
+      Runs the flagging in the correct order. Though in this case order does not matter as much.    
+
+
+   flagFileComments(self):
+
+
+   flagFileImports(self):
+
+
+
+PyFileDocs(self)
+   Superclass: Docs
+
+   File comments reside at the top of a file before the imports 
+
+
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyFileFlags(self):
+      Runs the flagging in the correct order. Though in this case order does not matter as much.    
+
+
+   flagFileComments(self):
+
+
+   flagFileImports(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      modules/documentation/py_parser.py
+--------------------------------------------------------------------------------
+ Meta Id's
+
+
+import config
+from modules.documentation import  Docs
+from modules import  logging
+from modules import  utilities
+import config
+from modules.documentation import  Docs
+from modules import  logging
+from modules import  utilities
+
+
+--------------------------------------------------------------------------------
+      modules/documentation/py_classes.py
+--------------------------------------------------------------------------------
+ from database import docs_db
+
+
+import config
+from modules.documentation import  Docs
+from modules import  logging
+import config
+from modules.documentation import  Docs
+from modules import  logging
+
+################################################################################
+#  Classes
+################################################################################
+
+PyClassesDocs(self)
+   Superclass: Docs
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyClassFlags(self):
+
+
+   flagClasses(self):
+      Find class start and endpoints in file and add appropriate flags    
+
+
+   flagClassDocstring(self):
+      Find the start and end of doc strings and flag appropriately    
+
+
+   flagClassMethods(self):
+      Find and flag class methods    
+
+
+   flagMethodParams(self):
+
+
+   flagMethodDocstring(self):
+
+
+   flagMethodReturnHint(self):
+
+
+
+PyClassesDocs(self)
+   Superclass: Docs
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyClassFlags(self):
+
+
+   flagClasses(self):
+      Find class start and endpoints in file and add appropriate flags    
+
+
+   flagClassDocstring(self):
+      Find the start and end of doc strings and flag appropriately    
+
+
+   flagClassMethods(self):
+      Find and flag class methods    
+
+
+   flagMethodParams(self):
+
+
+   flagMethodDocstring(self):
+
+
+   flagMethodReturnHint(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      modules/documentation/py_functions.py
+--------------------------------------------------------------------------------
+
+
+
+import config
+from modules.documentation import  Docs
+from modules import  logging
+import config
+from modules.documentation import  Docs
+from modules import  logging
+
+################################################################################
+#  Classes
+################################################################################
+
+PyFunctionDocs(self)
+   Superclass: Docs
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyFunctionFlags(self):
+      Runs all of the flagging in order. When in doubt this is the correct order    
+
+
+   flagFunctions(self):
+      Find and flag functions    
+
+
+   flagFunctionParams(self):
+
+
+   flagFunctionDocstring(self):
+
+
+
+PyFunctionDocs(self)
+   Superclass: Docs
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   processPyFunctionFlags(self):
+      Runs all of the flagging in order. When in doubt this is the correct order    
+
+
+   flagFunctions(self):
+      Find and flag functions    
+
+
+   flagFunctionParams(self):
+
+
+   flagFunctionDocstring(self):
+
+
+
+
+
+################################################################################
+#  Folder  #   test/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/__init__.py
+--------------------------------------------------------------------------------
+ To make test a module
+
+
+
+
+--------------------------------------------------------------------------------
+      test/readme.md
+--------------------------------------------------------------------------------
+
+
+
+
+
+################################################################################
+#  Folder  #   test/unit_tests/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/unit_tests/__init__.py
+--------------------------------------------------------------------------------
+ This file left intentionally blank
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/test_database.py
+--------------------------------------------------------------------------------
+
+
+
+import datetime
+import json
+from decimal import  Decimal
+import unittest
+from psycopg2.errors import  UndefinedTable
+import database
+from modules import  logging
+from test import  t_config
+import datetime
+import json
+from decimal import  Decimal
+import unittest
+from psycopg2.errors import  UndefinedTable
+import database
+from modules import  logging
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDatabase()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   drop_test_table(self):
+
+
+   query_len_test_table(self) -> int:
+
+
+   test_database_connection(self):
+
+
+   test_create_table(self):
+
+
+   test_add(self):
+
+
+   test_add_datatypes(self):
+
+
+   test_add_constraints(self):
+
+
+   test_add_multiple(self):
+
+
+   test_next_id(self):
+
+
+   test_query(self):
+
+
+   test_query_one(self):
+
+
+   test_scalar(self):
+
+
+
+TestDatabase()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   drop_test_table(self):
+
+
+   query_len_test_table(self) -> int:
+
+
+   test_database_connection(self):
+
+
+   test_create_table(self):
+
+
+   test_add(self):
+
+
+   test_add_datatypes(self):
+
+
+   test_add_constraints(self):
+
+
+   test_add_multiple(self):
+
+
+   test_next_id(self):
+
+
+   test_query(self):
+
+
+   test_query_one(self):
+
+
+   test_scalar(self):
+
+
+
+
+
+################################################################################
+#  Folder  #   test/unit_tests/modules/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/test_logging.py
+--------------------------------------------------------------------------------
+
+
+
+import glob
+import  os
+import  sys
+import  time
+import unittest
+from unittest.mock import  patch
+import modules.logging as logging
+import database
+from test import  t_config
+import glob
+import  os
+import  sys
+import  time
+import unittest
+from unittest.mock import  patch
+import modules.logging as logging
+import database
+from test import  t_config
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/__init__.py
+--------------------------------------------------------------------------------
+ This file left intentionally blank
+
+
+
+
+################################################################################
+#  Folder  #   test/unit_tests/modules/documentation/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_py_classes.py
+--------------------------------------------------------------------------------
+
+
+
+import unittest
+import modules.documentation.py_classes as py_classes
+from modules import  logging
+from test import  t_config
+import unittest
+import modules.documentation.py_classes as py_classes
+from modules import  logging
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocsPyClasses()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   test_find_classes(self):
+
+
+   test_find_class_docs(self):
+
+
+   test_find_class_methods(self):
+
+
+   test_find_method_parameters(self):
+
+
+   test_find_method_docs(self):
+
+
+   test_find_method_return(self):
+
+
+   test_find_method_decorators(self):
+
+
+
+TestDocsPyClasses()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   test_find_classes(self):
+
+
+   test_find_class_docs(self):
+
+
+   test_find_class_methods(self):
+
+
+   test_find_method_parameters(self):
+
+
+   test_find_method_docs(self):
+
+
+   test_find_method_return(self):
+
+
+   test_find_method_decorators(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_docs.py
+--------------------------------------------------------------------------------
+
+
+
+import unittest
+import modules.documentation as documentation
+from modules import  logging
+from test import  t_config
+import unittest
+import modules.documentation as documentation
+from modules import  logging
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocumentation()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   setUp(self):
+
+
+   tearDown(self):
+
+
+   test_generate_folder_and_file_lists(self):
+
+
+
+TestDocumentation()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   setUp(self):
+
+
+   tearDown(self):
+
+
+   test_generate_folder_and_file_lists(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_docs_export.py
+--------------------------------------------------------------------------------
+
+
+
+from glob import  glob
+import os
+import unittest
+import modules.documentation as documentation
+from modules.documentation import  export_docs
+from modules import  logging
+from test import  t_config
+from glob import  glob
+import os
+import unittest
+import modules.documentation as documentation
+from modules.documentation import  export_docs
+from modules import  logging
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocumentation()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   test_generate_txt_file(self):
+
+
+
+TestDocumentation()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   test_generate_txt_file(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_py_parsing.py
+--------------------------------------------------------------------------------
+
+
+
+import unittest
+import modules.documentation as documentation
+from modules.documentation import  py_classes
+from modules.documentation import  py_functions
+from modules.documentation import  py_parser
+from modules import  logging
+from modules.documentation import  py_meta
+from test import  t_config
+import unittest
+import modules.documentation as documentation
+from modules.documentation import  py_classes
+from modules.documentation import  py_functions
+from modules.documentation import  py_parser
+from modules import  logging
+from modules.documentation import  py_meta
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocsPyParsing()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   find_dict_in_list(self, key:str, value:str, _list:list) -> dict:
+      Finds a dictionary from a list of dictionaries by a key value pair   
+
+
+   test_parse_todos(self):
+
+
+   test_parse_imports(self):
+
+
+   test_parse_file_docs(self):
+
+
+   test_parse_functions(self):
+      Here functions will be function and nested functions. Not method functions or nested
+      method functions. Those are tested separately
+
+
+
+TestDocsPyParsing()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   find_dict_in_list(self, key:str, value:str, _list:list) -> dict:
+      Finds a dictionary from a list of dictionaries by a key value pair   
+
+
+   test_parse_todos(self):
+
+
+   test_parse_imports(self):
+
+
+   test_parse_file_docs(self):
+
+
+   test_parse_functions(self):
+      Here functions will be function and nested functions. Not method functions or nested
+      method functions. Those are tested separately
+
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/__init__.py
+--------------------------------------------------------------------------------
+ This file left intentionally blank
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_py_function.py
+--------------------------------------------------------------------------------
+
+
+
+import unittest
+from modules.documentation import  py_functions
+from modules import  logging
+from test import  t_config
+import unittest
+from modules.documentation import  py_functions
+from modules import  logging
+from test import  t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocsPyFunctions()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   test_func_defs(self):
+
+
+   test_func_params(self):
+
+
+   test_func_docs(self):
+
+
+   test_nested_func(self):
+
+
+
+TestDocsPyFunctions()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   test_func_defs(self):
+
+
+   test_func_params(self):
+
+
+   test_func_docs(self):
+
+
+   test_nested_func(self):
+
+
+
+
+
+--------------------------------------------------------------------------------
+      test/unit_tests/modules/documentation/test_py_meta.py
+--------------------------------------------------------------------------------
+
+
+
+import unittest
+from modules.documentation import  py_meta
+from modules import  logging
+from test import  t_config
+import unittest
+from modules.documentation import  py_meta
+from modules import  logging
+from test import  t_config
+
+
+################################################################################
+#  Folder  #   test/test_data/  
+################################################################################
+
+################################################################################
+#  Folder  #   test/test_data/documentation/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/test_data/documentation/demo.py
+--------------------------------------------------------------------------------
+ FILE HEADER DOCUMENTATION
+ This file and folder is not documentation about test_data, but test data for documentation
+
+ This is an example of the types of python documentation. In general this can serve as an example of how
+ code should/could look like in the project.
+                                                    
+     ____Expected Totals____                                           
+     Classes . . . . . . . 3                                        
+     Class docstring . . . 2
+     File import lines . . 7   
+     File imports. . . . . 9
+     File import aliases . 3
+     File import objects . 5 (from foo import [bar] <-)  
+     Functions . . . . . . 3
+     Function docstring. . 3
+     Function nested def . 3
+     Function return . . . 1
+     Methods inc. init . . 12 
+     Method nested def . . 2                                                
+     Method docstring. . . 10 
+     Method returns. . . . 11                                               
+     Super class lines . . 2
+     Super classes . . . . 3 
+     Todo. . . . . . . . . 2                                             
+     Todo lines. . . . . . 3  
+
+
+from datetime import datetime as dt
+from datetime import  time
+from config.modules import  Documentation
+from config.modules import Logging 
+from datetime import  timedelta
+import decimal as dec
+import numbers
+import time as exmpl
+import  chunk
+from datetime import datetime as dt
+from datetime import  time
+from config.modules import  Documentation
+from config.modules import Logging 
+from datetime import  timedelta
+import decimal as dec
+import numbers
+import time as exmpl
+import  chunk
+
+################################################################################
+#  Classes
+################################################################################
+
+Class1(self, param1:str, param2:dict, param3:False)
+
+   This is an example superclass
+   
+   Usage aka code block:
+   
+       ```
+       example code block
+       line 2 should line up with above
+           and this should in tabbed in one
+               and this indented 2
+       ```
+   
+       ```example code block
+       line 2 should line up with above
+           and this should in tabbed in one
+               and this indented 2```
+   
+   Params:
+       - param1: description with `code in it` 
+       - param2: this is a longer description than normal. Try to keep lines within 100 char
+         if you have to go over. align it with the block above to be included. 
+       - param3:False to do this, True to do that
+   
+   Notes:
+       This is a set of notes they may have `code` withing and that code may have `a: colon`
+       and should still be rendered correctly. In fact any : in anything other than a header 
+       should be ignored. 
+   
+   There can also be other paragraph blocks inside of this one. 
+   
+   Lists:
+       - there should
+       - be multiple levels of indent
+           - like this
+               - and this
+           - and back to here
+       - it should work to have : in a list
+       - as well as inline code
+
+
+
+   __init__(self, param1:str, param2:dict, param3:False) -> None:
+      Heres a docstring in an __init__    
+
+
+   c1func1(cls, param1:str):
+      Example one line docstring. Also a class method   
+
+
+   c1func2(param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line. Also a static method
+
+      nestedDef1(param1):
+         This is an example of a nested function    
+
+      nestedDef2(param2, new_line='\n') -> int:
+         And this is another example
+
+      nestedDef3():
+
+
+   c3func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+Class2(self, param1: str, param2: dict, param3: False, param4=False)
+   Superclass: Class1
+
+   This is an example class with a super class    
+
+
+
+   __init__(self, param1: str, param2: dict, param3: False, param4=False) -> None:
+
+
+   c2func1(self, param1:str) -> list:
+      Example one line docstring   
+
+
+   c2func2(self, param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line
+
+
+   c2func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+Class3(self, param1:str, param2:dict, param3:False)
+   Superclass: Class1, Class1
+
+   __init__(self, param1:str, param2:dict, param3:False) -> None:
+
+
+   c3func1(self, param1:str) -> list:
+      Example one line docstring   
+
+
+   c3func2(self, param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line
+
+
+   c3func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+Class1(self, param1:str, param2:dict, param3:False)
+
+   This is an example superclass
+   
+   Usage aka code block:
+   
+       ```
+       example code block
+       line 2 should line up with above
+           and this should in tabbed in one
+               and this indented 2
+       ```
+   
+       ```example code block
+       line 2 should line up with above
+           and this should in tabbed in one
+               and this indented 2```
+   
+   Params:
+       - param1: description with `code in it` 
+       - param2: this is a longer description than normal. Try to keep lines within 100 char
+         if you have to go over. align it with the block above to be included. 
+       - param3:False to do this, True to do that
+   
+   Notes:
+       This is a set of notes they may have `code` withing and that code may have `a: colon`
+       and should still be rendered correctly. In fact any : in anything other than a header 
+       should be ignored. 
+   
+   There can also be other paragraph blocks inside of this one. 
+   
+   Lists:
+       - there should
+       - be multiple levels of indent
+           - like this
+               - and this
+           - and back to here
+       - it should work to have : in a list
+       - as well as inline code
+
+
+
+   __init__(self, param1:str, param2:dict, param3:False) -> None:
+      Heres a docstring in an __init__    
+
+
+   c1func1(cls, param1:str):
+      Example one line docstring. Also a class method   
+
+
+   c1func2(param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line. Also a static method
+
+      nestedDef1(param1):
+         This is an example of a nested function    
+
+      nestedDef2(param2, new_line='\n') -> int:
+         And this is another example
+
+      nestedDef3():
+
+
+   c3func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+Class2(self, param1: str, param2: dict, param3: False, param4=False)
+   Superclass: Class1
+
+   This is an example class with a super class    
+
+
+
+   __init__(self, param1: str, param2: dict, param3: False, param4=False) -> None:
+
+
+   c2func1(self, param1:str) -> list:
+      Example one line docstring   
+
+
+   c2func2(self, param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line
+
+
+   c2func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+Class3(self, param1:str, param2:dict, param3:False)
+   Superclass: Class1, Class1
+
+   __init__(self, param1:str, param2:dict, param3:False) -> None:
+
+
+   c3func1(self, param1:str) -> list:
+      Example one line docstring   
+
+
+   c3func2(self, param1:dict, param2=False) -> str:
+      Example one string with closing tag on new line
+
+
+   c3func3(self, param1:list, param2:str, param3:dict) -> dict:
+      Example multi line docstring with the preferred formatting style
+      This is the second line 
+
+
+
+
+
+   testImportInFunction(param1, param2:str, param3=None):
+      A single line docstring     
+
+
+   testNestedDefInFunction():
+      Example one string with closing tag on new line
+
+      returns1(param1:str) -> int:
+
+      returns2() -> int:
+         As the function says returns 
+         two
+
+      returns3(param=3, param88=88):
+
+
+   decoratedAndMultiLine(param1, param2:str, param3={}) -> str:
+      Example multi line docstring with the preferred formatting style
+          This is the second line 
+
+
+   testImportInFunction(param1, param2:str, param3=None):
+      A single line docstring     
+
+
+   testNestedDefInFunction():
+      Example one string with closing tag on new line
+
+      returns1(param1:str) -> int:
+
+      returns2() -> int:
+         As the function says returns 
+         two
+
+      returns3(param=3, param88=88):
+
+
+   decoratedAndMultiLine(param1, param2:str, param3={}) -> str:
+      Example multi line docstring with the preferred formatting style
+          This is the second line 
+
+
+################################################################################
+#  Folder  #   test/test_data/logs/  
+################################################################################
+
+################################################################################
+#  Folder  #   test/t_config/  
+################################################################################
+
+--------------------------------------------------------------------------------
+      test/t_config/__init__.py
+--------------------------------------------------------------------------------
+
+
+
+from test.t_config import  db
+from test.t_config import  modules
+from test.t_config import  db
+from test.t_config import  modules
+
+
+--------------------------------------------------------------------------------
+      test/t_config/modules.py
+--------------------------------------------------------------------------------
+
+
+
+from config.modules import  Documentation
+from config.modules import  Logging 
+from config.modules import  Documentation
+from config.modules import  Logging 
+
+
+--------------------------------------------------------------------------------
+      test/t_config/db.py
+--------------------------------------------------------------------------------
+
+
+
+from config.db import  GrowDb
+from config.db import  GrowDb
+
+

@@ -1,4 +1,6 @@
-from modules.documentation import py_classes
+import config
+from modules import documentation 
+from modules.documentation import export_docs
 
-obj = py_classes.PyClassesDocs()
-obj.processPyClassFlags()
+documentation.generateDocumentation()
+export_docs.toTxt(config.modules.Documentation.file_export)
