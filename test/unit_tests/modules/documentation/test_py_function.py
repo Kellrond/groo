@@ -18,7 +18,7 @@ class TestDocsPyFunctions(unittest.TestCase):
         py_functions.Docs.file_lines  = []
         py_functions.Docs.file_paths  = []
         py_functions.Docs.folder_list = []
-        cls.funcDoc = py_functions.PyFunctionDocs.from_test_conf(t_config.modules.Documentation)
+        cls.funcDoc = py_functions.PyFunctions.from_test_conf(t_config.modules.Documentation)
         cls.funcDoc.readLines()
         cls.funcDoc.processPyFunctionFlags()
 
@@ -32,7 +32,7 @@ class TestDocsPyFunctions(unittest.TestCase):
     # Helper functions
     def find_flags(self, flag:str) -> int:
         '''Looks for a parsing flag '''
-        file = [ file for file in self.funcDoc.file_lines if file.get('file_path') == 'test/test_data/documentation/demo.py' ]
+        file = [ file for file in self.funcDoc.file_lines if file.get('file_path') == './test/test_data/documentation/demo.py' ]
         if len(file) >= 1:
             file = file[0]
         count = 0

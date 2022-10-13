@@ -1,14 +1,18 @@
-import config
-from modules.documentation import Docs
-from modules import logging
+''' Houses the PyFunctions class for flagging Python files for documentation '''
+# Internal
+import  config
+from    modules.documentation import Docs
+from    modules.logging       import Log
 
-log = logging.Log(__name__)
+log = Log(__name__)
 
-class PyFunctionDocs(Docs):
+class PyFunctions(Docs):
+    ''' Inserts function related parsing flags into the file_lines class variable'''
     @log.performance
     def __init__(self) -> None:
         self.config = config.modules.Documentation
         super().__init__()
+        # Ensure that the Doc class variables are filled
         self.readLines()
 
     @classmethod
@@ -23,20 +27,21 @@ class PyFunctionDocs(Docs):
     @log.performance
     def processPyFunctionFlags(self):
         ''' Runs all of the flagging in order. When in doubt this is the correct order '''
-        self.flagFunctions()
-        self.flagFunctionParams()
-        self.flagFunctionDocstring()
-        self.flagNestedFunctions()
-        log.verbose('Python documentation generator: Functions')
+        log.verbose('Start flagging Python functions')
+        self.__flag_functions()
+        self.__flag_function_params()
+        self.__flag_function_docstring()
+        self.__flag_nested_functions()
+        log.verbose('Stop flagging Python function')
 
     @log.performance
-    def flagFunctions(self):
+    def __flag_functions(self):
         ''' Find and flag functions '''
         for file in self.file_lines:
             in_function = False
             prev_line_w_text  = 0
             # Ignore non python files and continue to next file
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'),'py'):
                 continue
 
             for line in file.get('lines'):
@@ -46,9 +51,7 @@ class PyFunctionDocs(Docs):
                 if in_function == True:
                     # Check if the function is finished
                     if line.get('whitespace') == 0:
-                        
                         first_char = line.get('line')[0] if len(line.get('line')) > 0 else ''
-                        
                         if first_char == '@':
                             # Technically we are starting a method here but since its not being
                             # declared we set it False
@@ -75,9 +78,7 @@ class PyFunctionDocs(Docs):
                 if in_function == False:
                     # Look for additional decorators
                     if line.get('whitespace') == 0:
-                        
-                        first_char = line.get('line')[0] if len(line.get('line')) > 0 else ''
-                        
+                        first_char = line.get('line')[0] if len(line.get('line')) > 0 else ''      
                         if first_char == '@':
                             # Technically we are starting a method here but since its not being
                             # declared we set it False
@@ -100,9 +101,10 @@ class PyFunctionDocs(Docs):
                 file['lines'][-1]['flags'].append('func end')
 
     @log.performance
-    def flagFunctionParams(self):
+    def __flag_function_params(self):
+        ''' Adds flags for function parameters'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+            if not self.isFileOfExtension(file.get('file_path'),'py'): # Ignore non python files
                 continue     
 
             in_function_params = False      
@@ -123,9 +125,10 @@ class PyFunctionDocs(Docs):
                         line['flags'].append('func return')
 
     @log.performance
-    def flagFunctionDocstring(self):
+    def __flag_function_docstring(self):
+        ''' Adds flags for function docstring'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+            if not self.isFileOfExtension(file.get('file_path'),'py'): # Ignore non python files
                 continue       
 
             line_after_function_def = False
@@ -169,8 +172,8 @@ class PyFunctionDocs(Docs):
                     line_after_function_def = False
          
     @log.performance
-    def flagNestedFunctions(self):
-        ''' This is a pretty long function. It could be broken up, but it works.'''
+    def __flag_nested_functions(self):
+        ''' Adds all flags for nested functions'''
         for file in self.file_lines:
             in_nested_function = False
             in_params = False
@@ -178,7 +181,7 @@ class PyFunctionDocs(Docs):
             nested_whitespace = 0
             prev_line_w_text  = 0
             # Ignore non python files and continue to next file
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'),'py'):
                 continue
 
             for line in file.get('lines'):

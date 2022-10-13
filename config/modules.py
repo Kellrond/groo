@@ -1,7 +1,7 @@
 class Documentation:
     docs_ext_list = ['py', 'html', 'txt', 'sh', 'sql', 'js', 'css', 'md', 'wsgi', 'yml']
-    docs_folder_list = ['config', 'database', 'modules', 'test'] 
-    file_export = 'docs/source_code/source_code_docs.txt'
+    docs_folder_list = ['./config', './database', './modules', './test'] 
+    export_file_path = 'docs/source_code/source_code_docs.txt'
 
 class Logging:
     # Set what level of logging you want. Level 2 includes 0 and 1 etc. 
@@ -19,8 +19,10 @@ class Logging:
     # too long to execute in one section of code.
     test_performance = True  
     # Minimal testing reduces the verbosity of the performance logs
-    minimal_test = False
+    
+    minimal_test = False # Currently not implemented!! Need to pass the minimal = True parameter in the decorator
+
     # When both db and file are selected there is a significant performance hit. So use one or the other
     # or fix this. Possibly by caching writes to the file and/or db to reduce the transactions. 
     performance_to_db   = True
-    performance_to_file = True
+    performance_to_file = False

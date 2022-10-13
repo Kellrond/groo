@@ -20,20 +20,20 @@ class TestDocsPyParsing(unittest.TestCase):
         py_meta.Docs.file_lines  = []
         py_meta.Docs.file_paths  = []
         py_meta.Docs.folder_list = []
-        py_parser.PyDocsParser.folders = []
-        py_parser.PyDocsParser.files   = [] 
-        py_parser.PyDocsParser.classes = []
-        py_parser.PyDocsParser.functions = []
-        py_parser.PyDocsParser.file_docs = []
-        py_parser.PyDocsParser.imports = []
-        py_parser.PyDocsParser.todo = []
+        py_parser.PyParser.folders = []
+        py_parser.PyParser.files   = [] 
+        py_parser.PyParser.classes = []
+        py_parser.PyParser.functions = []
+        py_parser.PyParser.file_docs = []
+        py_parser.PyParser.imports = []
+        py_parser.PyParser.todo = []
 
 
         cls.docs = documentation.Docs.from_test_conf(t_config.modules.Documentation)
-        cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
-        cls.classDoc = py_classes.PyClassesDocs.from_test_conf(t_config.modules.Documentation)
-        cls.funcDoc = py_functions.PyFunctionDocs.from_test_conf(t_config.modules.Documentation)
-        cls.parser = py_parser.PyDocsParser.from_test_conf(t_config.modules.Documentation)
+        cls.fileDoc = py_meta.PyMeta.from_test_conf(t_config.modules.Documentation)
+        cls.classDoc = py_classes.PyClasses.from_test_conf(t_config.modules.Documentation)
+        cls.funcDoc = py_functions.PyFunctions.from_test_conf(t_config.modules.Documentation)
+        cls.parser = py_parser.PyParser.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc.readLines()
 
         for file in cls.docs.file_lines:
@@ -54,7 +54,7 @@ class TestDocsPyParsing(unittest.TestCase):
 
     def find_flags(self, flag:str) -> int:
         '''Looks for a parsing flag '''
-        file = [ file for file in self.docs.file_lines if file.get('file_path') == 'test/test_data/documentation/demo.py' ]
+        file = [ file for file in self.docs.file_lines if file.get('file_path') == './test/test_data/documentation/demo.py' ]
         if len(file) >= 1:
             file = file[0]
         count = 0

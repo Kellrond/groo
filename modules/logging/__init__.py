@@ -1,14 +1,34 @@
-import  config
-from    modules import utilities
-# External dependancies
+''' Logging is an important pars of any system. This file contains the Log class which handles both 
+    performance and message logging. 
+
+    There is some boiler plate which should exist in every python file
+
+        ``` from modules.logging import Log
+        
+            log = Log(__name__)
+
+            @log.performance
+            def example():
+        ```
+    Where def example is any function in the system
+    
+'''
 import  datetime as dt
 from    glob import glob
+import  os 
 from    time import perf_counter
-import  os, psycopg2
+# External
+import  psycopg2
+# Internal
+import  config
+from    modules import utilities
 
 # The generator object should be in the files scope so that all the log instances share the generator
 perf_exec_start = utilities.generateIntegerSequence()
 perf_exec_end   = utilities.generateIntegerSequence()
+
+# TODO: This should be made more performant. Ideas include caching Db writes to be able to do more in bulk. 
+# Should speed test and see what is the best option for speed / memory use. Perhaps write to file then ingest 
 
 class Log():
     ''' Handles logging throughout the app. There are 6 levels of logging currently
@@ -37,9 +57,10 @@ class Log():
         self.src_name = src_name
         self.config = config.modules.Logging
         self.db_config = config.db.GrowDb
+        self.pid = os.getpid()
 
         if not Log.log_files_exist:
-            Log.log_files_exist = (self.__check_for_log_folder() and self.__check_for_logs())
+            Log.log_files_exist = (self.__check_for_log_folder() and self.__check_for_log_files())
             if not Log.log_files_exist:
                 self.init_logs()
                 Log.log_files_exist = True
@@ -75,84 +96,70 @@ class Log():
         return test_class
 
     def fatal(self, txt: str) -> None:
-        ''' Log level: 0'''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 0,
-            'name': 'FATAL',
-            'module': self.src_name,
-            'log': str(txt),
-        } 
+        ''' Log level: 0 - FATAL
+        
+            This log level is for fatal errors which cause the application to crash or would have
+            if they were not in a try: block
+        '''
+        log = self.__return_log_dict(0,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
             self.__log_file_write(log)
         
     def error(self, txt: str) -> None:
-        ''' Log level: 1'''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 1,
-            'name': 'ERROR',
-            'module': self.src_name,
-            'log': str(txt),
-        }
+        ''' Log level: 1 - ERROR 
+
+            Use error for significant but recoverable errors
+        '''
+        log = self.__return_log_dict(1,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
             self.__log_file_write(log)
 
     def warn(self, txt: str) -> None:
-        ''' Log level: 2'''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 2,
-            'name': 'WARN',
-            'module': self.src_name,
-            'log': str(txt),
-        }
+        ''' Log level: 2 - WARN
+        
+            Something seems off or some configuration is unsafe
+        '''
+        log = self.__return_log_dict(2,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
             self.__log_file_write(log)
 
     def info(self, txt: str) -> None:
-        ''' Log level: 3'''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 3,
-            'name': 'INFO',
-            'module': self.src_name,
-            'log': str(txt),
-        }
+        ''' Log level: 3 - INFO
+        
+            Things you just might want to know
+        '''
+        log = self.__return_log_dict(3,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
             self.__log_file_write(log)
 
     def debug(self, txt: str) -> None:
-        ''' Log level: 4'''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 4,
-            'name': 'DEBUG',
-            'module': self.src_name,
-            'log': str(txt),
-        }
+        ''' Log level: 4 - DEBUG
+        
+            This should be for development level message. Try not to make it too verbose, 
+            there's a level for that.
+        '''
+        log = self.__return_log_dict(4,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
             self.__log_file_write(log)
 
     def verbose(self, txt: str) -> None:
-        ''' Log level: 5 '''
-        log = {
-            'timestamp': dt.datetime.now(),
-            'level': 5,
-            'name': 'VERBOSE',
-            'module': self.src_name,
-            'log': str(txt),
-        }
+        ''' Log level: 5 - VERBOSE
+        
+            Warning: Very noisy
+            
+            When you absolutely must know everything that's going on. 
+        '''
+        log = self.__return_log_dict(5,txt)
         if self.test_mode == False:
             self.__log_console_write(log)
             self.__log_db_write(log)
@@ -189,6 +196,7 @@ class Log():
             log = {
                 'start_id': start_id,
                 'end_id': end_id,
+                'pid': self.pid,
                 'timestamp': dt.datetime.now(),
                 'module': self.src_name,
                 'name': func.__name__,
@@ -200,15 +208,6 @@ class Log():
             return result
         return performance_wrapper
 
-
-    def __check_for_log_folder(self) -> bool:
-        folder_list = glob('**/', recursive=True)
-        return (f'{self.config.log_dir}/' in folder_list)
-
-    def __check_for_logs(self) -> bool:
-        file_list = glob(f'{self.config.log_dir}/**/*.*', recursive=True)
-        x = [ 1 for file in file_list if file == self.config.log_file ]
-        return sum(x) > 0
 
     def init_logs(self) -> None:
         ''' Ensure that the required folders and files are in place to start logging '''
@@ -223,6 +222,38 @@ class Log():
         ''' Remove all .log files created '''
         os.remove(f'{self.config.log_dir}/{self.config.log_file}')
         os.remove(f'{self.config.log_dir}/{self.config.performance_file}')
+
+
+    # Helper functions
+
+    def __return_log_dict(self, level:int, log_txt:str) -> dict:
+        ''' The function helps to reduce error by producing log dictionaries 
+
+            Params: 
+                - level: gives the level and text name to the log
+                - log_txt: the message to be logged
+        '''
+        log_names = {0:'FATAL', 1:'ERROR', 2:'WARN', 3:'INFO', 4:'DEBUG', 5:'VERBOSE'}
+        return {
+            'timestamp': dt.datetime.now(),
+            'pid': self.pid,
+            'level': level,
+            'name': log_names.get(level),
+            'module': self.src_name,
+            'log': str(log_txt),
+        }
+
+    def __check_for_log_folder(self) -> bool:
+        ''' Before we can have a log file there must be a log folder '''
+        folder_list = glob('**/', recursive=True)
+        return (f'{self.config.log_dir}/' in folder_list)
+
+    def __check_for_log_files(self) -> bool:
+        ''' If the log file does not exist, it will may throw and error when accessed. '''
+        file_list = glob(f'{self.config.log_dir}/**/*.*', recursive=True)
+        x = [ 1 for file in file_list if file == self.config.log_file ]
+        return sum(x) > 0
+
 
     # Output logs
     def __log_console_write(self, log: dict):
@@ -247,7 +278,7 @@ class Log():
             with open(f'{self.config.log_dir}/{self.config.log_file}', 'a') as file:
                 log_lines = log.get('log','').split('\n')
                 for line in log_lines: 
-                    file.write(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
+                    file.write(f"{log.get('timestamp')}\t{log.get('pid')}\t{log.get('name')}\t{log.get('module')}\t{line}\n")
 
     def __log_db_write(self, log: dict): 
         ''' Writes the log to the database. This has a basic pattern to create the db connection and
@@ -285,6 +316,11 @@ class Log():
                 raise e
 
     def __perf_db_write(self, log:dict):
+        ''' Write the performance data to database. The database connection is created on the spot
+
+            Params:
+                - log: a dictionary created from the methods above
+        '''
         if self.config.performance_to_db:
             # Log must be manually input to avoid a feedback loop of db adds triggering logs which get added to db
             db_conn = psycopg2.connect(
@@ -295,7 +331,8 @@ class Log():
                     dbname=self.db_config.dbname
                 )
 
-            tempLog = { k:v for k, v in log.items() if k != 'name'}
+            tempLog = log
+            # tempLog = { k:v for k, v in log.items() if k != 'name'}
 
             columns = ", ".join(tempLog.keys())
             placeholders = ", ".join([ '%s' for x in tempLog.values() ])  
@@ -315,7 +352,7 @@ class Log():
 
     def __perf_file_write(self, log:dict):
         if self.config.performance_to_file:
-            line = f"{log.get('timestamp')}\t{log.get('start_id')}\t{log.get('end_id')}\t{log.get('module')}\t{log.get('name')}\t{log.get('duration'):10.10f}\n"
+            line = f"{log.get('timestamp')}\t{log.get('pid')}\t{log.get('start_id')}\t{log.get('end_id')}\t{log.get('module')}\t{log.get('name')}\t{log.get('duration'):10.10f}\n"
             with open(f'{self.config.log_dir}/{self.config.performance_file}', 'a') as file:
                 file.write(line)
 

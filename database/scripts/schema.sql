@@ -6,17 +6,9 @@ create table if not exists doc_classes
 	name text,
 	superclass text,
 	docstring text,
-	parameters text
-);
-
-create table doc_dependencies
-(
-	file_id integer not null,
-	module text not null,
-	object text,
-	dependency_id serial not null
-		constraint doc_dependencies_pk
-			primary key
+	parameters text,
+	line_start integer,
+	line_count integer
 );
 
 create table doc_files
@@ -27,6 +19,12 @@ create table doc_files
 	file_path text,
 	ext text,
 	lines integer
+);
+
+create table doc_file_docs
+(
+	file_id integer primary key,
+	docs text
 );
 
 create table doc_folders
@@ -42,25 +40,40 @@ create table doc_functions
 	function_id integer primary key,
 	parent_id integer,
 	file_id integer,
+	class_id integer,
 	name text,
 	parameters text,
 	returns text,
-	docstring text
+	docstring text,
+	decorators text,
+	line_start integer,
+	line_count integer
 );
 
-create table doc_routes
+create table doc_imports
 (
+	import_id integer primary key,
 	file_id integer,
-	methods text,
-	permissions text,
-	url text not null
-		constraint dev_routes_pk
-			primary key
+	module text,
+	object text,
+	alias text,
+	line_start integer
+);
+
+
+create table doc_todos
+(
+	todo_id integer primary key,
+	file_id integer,
+	todo text,
+	line_start integer,
+	line_count integer
 );
 
 create table logs
 (
 	log_id serial primary key,
+	pid integer,
 	timestamp timestamp,
 	level integer,
 	module text,
@@ -70,6 +83,7 @@ create table logs
 create table performance_logs
 (
 	log_id serial primary key,
+	pid integer,
 	timestamp timestamp,
 	start_id integer,
 	end_id integer,
@@ -77,8 +91,3 @@ create table performance_logs
 	name text,
 	duration real
 );
-
-
-
-
-

@@ -18,7 +18,7 @@ class TestDocsPyHeader(unittest.TestCase):
         py_meta.Docs.file_lines  = []
         py_meta.Docs.file_paths  = []
         py_meta.Docs.folder_list = []
-        cls.fileDoc = py_meta.PyFileDocs.from_test_conf(t_config.modules.Documentation)
+        cls.fileDoc = py_meta.PyMeta.from_test_conf(t_config.modules.Documentation)
         cls.fileDoc.readLines()
         cls.fileDoc.processPyFileFlags()
 
@@ -32,7 +32,7 @@ class TestDocsPyHeader(unittest.TestCase):
     # Helper functions
     def find_flags(self, flag:str) -> int:
         '''Looks for a parsing flag '''
-        file = [ file for file in self.fileDoc.file_lines if file.get('file_path') == 'test/test_data/documentation/demo.py' ]
+        file = [ file for file in self.fileDoc.file_lines if file.get('file_path') == './test/test_data/documentation/demo.py' ]
         if len(file) >= 1:
             file = file[0]
         count = 0

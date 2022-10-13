@@ -1,4 +1,4 @@
-█▀▀ █▀█ █▀█ █ █ █                                                    Oct 05 2022
+█▀▀ █▀█ █▀█ █ █ █                                                    Oct 12 2022
 █▄█ █▀▄ █▄█ ▀▄▀▄▀                                      Source code documentation
 --------------------------------------------------------------------------------
 
@@ -13,19 +13,20 @@ the relevant documentation within that file.
 File and folder structure
 ================================================================================
 
-   test/test_data/documentation/
-      - test/test_data/documentation/demo.py
+   ./test/test_data/documentation/
+      - ./test/test_data/documentation/demo.py
+      - ./test/test_data/documentation/source_code_docs.txt
 
 
 Source code documentation
 ================================================================================
 
 ################################################################################
-#  Folder  #   test/test_data/documentation/  
+#  Folder  #   ./test/test_data/documentation/  
 ################################################################################
 
 --------------------------------------------------------------------------------
-      test/test_data/documentation/demo.py
+      ./test/test_data/documentation/demo.py
 --------------------------------------------------------------------------------
  FILE HEADER DOCUMENTATION
  This file and folder is not documentation about test_data, but test data for documentation
@@ -55,14 +56,14 @@ Source code documentation
 
 
 from datetime import datetime as dt
-from datetime import  time
-from config.modules import  Documentation
-from config.modules import Logging 
-from datetime import  timedelta
+from datetime import time
+from config.modules import Documentation
+from config.modules import Logging
+from datetime import timedelta
 import decimal as dec
 import numbers
 import time as exmpl
-import  chunk
+import chunk
 
 ################################################################################
 #  Classes
@@ -201,5 +202,10 @@ Class3(self, param1:str, param2:dict, param3:False)
    decoratedAndMultiLine(param1, param2:str, param3={}) -> str:
       Example multi line docstring with the preferred formatting style
           This is the second line 
+
+
+--------------------------------------------------------------------------------
+      ./test/test_data/documentation/source_code_docs.txt
+--------------------------------------------------------------------------------
 
 

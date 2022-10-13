@@ -1,3 +1,6 @@
+''' The main goal with this file is to apply flags to any class items so that the parser can
+    grab the values. 
+'''
 import config
 from modules.documentation import Docs
 from modules import logging
@@ -5,11 +8,13 @@ from modules import logging
 
 log = logging.Log(__name__)
 
-class PyClassesDocs(Docs):
+class PyClasses(Docs):
+    ''' Inserts class related parsing flags into the file_lines class variable'''
     @log.performance
     def __init__(self) -> None:
         self.config = config.modules.Documentation
         super().__init__()
+        # Ensure that the Doc class variables are filled
         self.readLines()
 
     @classmethod
@@ -23,21 +28,23 @@ class PyClassesDocs(Docs):
 
     @log.performance
     def processPyClassFlags(self):
-        self.flagClasses()
-        self.flagClassDocstring()
-        self.flagClassMethods()
-        self.flagMethodParams()
-        self.flagMethodDocstring()
-        self.flagMethodReturnHint()
-        self.flagNestedFunctions()
+        log.verbose('Start flagging Python classes')
+        self.__flag_classes()
+        self.__flag_class_docstring()
+        self.__flag_class_methods()
+        self.__flag__method_params()
+        self.__flag_method_docstring()
+        self.__flag_method_return_hint()
+        self.__flag_nested_functions()
+        log.verbose('Stop flagging Python classes')
 
     @log.performance
-    def flagClasses(self):
+    def __flag_classes(self):
         ''' Find class start and endpoints in file and add appropriate flags '''
         for file in self.file_lines:
             prev_line_w_text = 0
             in_class = False
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'), 'py'):
                 continue
 
             for line in file.get('lines'):
@@ -77,14 +84,14 @@ class PyClassesDocs(Docs):
 
 
     @log.performance
-    def flagClassDocstring(self):
-        ''' Find the start and end of doc strings and flag appropriately '''
+    def __flag_class_docstring(self):
+        ''' Adds flags for class docstrings'''
         for file in self.file_lines:
             line_after_class_def = False
             in_docstring = False
             docs_start_pos = 0
             # Ignore non python files and continue to next file
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'),'py'):
                 continue
 
             for line in file.get('lines'):
@@ -123,14 +130,14 @@ class PyClassesDocs(Docs):
                     line_after_class_def = False
 
     @log.performance
-    def flagClassMethods(self):
-        ''' Find and flag class methods '''
+    def __flag_class_methods(self):
+        ''' Adds flags for class methods'''
         for file in self.file_lines:
             in_method = False
             method_whitespace = 0
             prev_line_w_text  = 0
             # Ignore non python files and continue to next file
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'),'py'):
                 continue
 
             for line in file.get('lines'):
@@ -179,7 +186,6 @@ class PyClassesDocs(Docs):
                             if line.get('line')[start:end+8] == 'def __init__':
                                 line['flags'].append('init')
 
-
                 # Catch the end of class and close off methods
                 elif in_method and 'cls' not in line.get('flags'):
                     in_method = False
@@ -193,9 +199,10 @@ class PyClassesDocs(Docs):
                     prev_line_w_text = line.get('line_no')
 
     @log.performance
-    def flagMethodParams(self):
+    def __flag__method_params(self):
+        ''' Adds flags for method parameters'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+            if not self.isFileOfExtension(file.get('file_path'),'py'): # Ignore non python files
                 continue     
 
             in_method_params = False      
@@ -214,9 +221,10 @@ class PyClassesDocs(Docs):
                     if line.get('line').find('->') > -1:
                         line['flags'].append('meth return')
     @log.performance
-    def flagMethodDocstring(self):
+    def __flag_method_docstring(self):
+        ''' Adds flags for method docstrings'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+            if not self.isFileOfExtension(file.get('file_path'),'py'): # Ignore non python files
                 continue       
 
             line_after_method_def = False
@@ -263,9 +271,10 @@ class PyClassesDocs(Docs):
                     line_after_method_def = False
          
     @log.performance
-    def flagMethodReturnHint(self):
+    def __flag_method_return_hint(self):
+        ''' Adds flags for method return hints'''
         for file in self.file_lines:
-            if not self.isFileOfExtension(file, 'py'): # Ignore non python files
+            if not self.isFileOfExtension(file.get('file_path'),'py'): # Ignore non python files
                 continue       
             for line in file.get('lines'): 
                 if 'meth param end' in line.get('flags'):
@@ -273,8 +282,8 @@ class PyClassesDocs(Docs):
                         line['flags'].append('meth return')
 
     @log.performance
-    def flagNestedFunctions(self):
-        ''' This is a pretty long function. It could be broken up, but it works.'''
+    def __flag_nested_functions(self):
+        ''' Adds all flags for nested method functions'''
         for file in self.file_lines:
             in_nested_method = False
             in_params = False
@@ -282,7 +291,7 @@ class PyClassesDocs(Docs):
             nested_whitespace = 0
             prev_line_w_text  = 0
             # Ignore non python files and continue to next file
-            if not self.isFileOfExtension(file, 'py'):
+            if not self.isFileOfExtension(file.get('file_path'),'py'):
                 continue
 
             for line in file.get('lines'):

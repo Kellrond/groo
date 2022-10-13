@@ -2,8 +2,9 @@ import datetime
 import json
 from decimal import Decimal
 import unittest
+# External
 from psycopg2.errors import UndefinedTable
-
+# Internal
 import database
 from modules import logging
 from test import t_config

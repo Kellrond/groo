@@ -1,6 +1,10 @@
-import config
-from modules.documentation import Docs
-from modules import logging, utilities
+''' This file holds the PyParser class which goes through each line and parses code 
+    documentation from file_lines
+'''
+# Internal
+import  config
+from    modules.documentation import Docs
+from    modules import logging, utilities
 
 
 log = logging.Log(__name__)
@@ -11,13 +15,24 @@ function_id_gen = utilities.generateIntegerSequence()
 todo_id_gen   = utilities.generateIntegerSequence()
 import_id_gen = utilities.generateIntegerSequence()
 file_comment_id_gen = utilities.generateIntegerSequence()
+ 
+# TODO: ! This is not showing up in documentation
 
-class PyDocsParser(Docs):
-    ''' File comments reside at the top of a file before the imports 
+class PyParser(Docs):
+    ''' This class parses the flags which were set by the other documentation classes.
+
+        The class variables are the final output of the parser
+            - classes
+            - functions
+            - file_docs
+            - imports
+            - todo
+
+        Others are listed under the Docs class, which is available here as well due to the superclass.
+            - folder_list
+            - file_lines
     '''    
 
-    folders = []
-    files   = [] 
     classes = []
     functions = []
     file_docs = []
@@ -40,7 +55,7 @@ class PyDocsParser(Docs):
     @log.performance
     def parsePython(self):
         ''' Takes the flagged lines and converts them into objects'''
-
+        log.verbose('Start parsing Python documentation')
         for file in self.file_lines:
             py_class_lines = []
             py_meta_lines  = []
@@ -58,8 +73,9 @@ class PyDocsParser(Docs):
                     py_meta_lines.append(line)
 
             self.__parse_classes(file, py_class_lines)
-            self.parse_functions(file, py_func_lines)
-            self.parse_meta(file, py_meta_lines)
+            self.__parse_functions(file, py_func_lines)
+            self.__parse_meta(file, py_meta_lines)
+        log.verbose('Stop parsing Python documentation')
 
     @log.performance
     def __parse_classes(self, file:dict, lines:list):
@@ -154,8 +170,7 @@ class PyDocsParser(Docs):
                 - file: the file parameter from the function that called this
                 - class_id: the parent function_id to be placed in the nested function object
                 - method_lists: a filtered list of lines containing relevant flags
-        '''   
-
+        '''  
         # Split methods into their own lists
         meth_list = []
         meth_lines = []
@@ -317,7 +332,7 @@ class PyDocsParser(Docs):
 
 
     @log.performance
-    def parse_functions(self, file:dict, lines:list):
+    def __parse_functions(self, file:dict, lines:list):
         ''' Extract the function docs data like parameters, returns, docstring, nested functions.
             This is fed individual files. 
         
@@ -494,7 +509,7 @@ class PyDocsParser(Docs):
 
 
     @log.performance
-    def parse_meta(self, file:dict, lines:list):
+    def __parse_meta(self, file:dict, lines:list):
         ''' Extract the meta data like file comments, imports and todo comment  s 
         
             Params: 
@@ -529,13 +544,17 @@ class PyDocsParser(Docs):
                     pos_colon_todo = line.lower().find('todo:')
                     pos_todo = line.lower().find('todo ')
                     if pos_colon_todo > -1:
-                        line = line[pos_colon_todo+5:]
+                        line = line[pos_colon_todo+6:]
                     elif pos_todo > -1:
-                        line = line[pos_todo+4:]
+                        line = line[pos_todo+5:]
 
                     self.todo.append({'todo_id':next(todo_id_gen), 'file_id': file_id, 'line_start': ln_no, 'line_count': 1, 'line': line})
 
             elif 'file docs' in flags:
+                ln_dict['line'] =  line.replace("'''",'   ').replace('"""', '   ')
+                ln_dict['whitespace'] = len(ln_dict['line']) - len(ln_dict['line'].lstrip())
+                if ln_dict['whitespace'] >= 3:
+                    ln_dict['line'][3:]
                 file_doc_list.append(ln_dict)
 
             if 'import' in flags:
@@ -558,8 +577,8 @@ class PyDocsParser(Docs):
                                 'import_id': next(import_id_gen), 
                                 'file_id': file_id, 
                                 'line_no': ln_no,
-                                'module': module,
-                                'object': obj, 
+                                'module': module.strip(),
+                                'object': obj.strip(), 
                                 'alias': alias
                                 }
                             )   
@@ -579,7 +598,7 @@ class PyDocsParser(Docs):
                                     'import_id': next(import_id_gen), 
                                     'file_id': file_id, 
                                     'line_no': ln_no,
-                                    'module': module,
+                                    'module': module.strip(),
                                     'object': None, 
                                     'alias': alias
                                     }
@@ -602,7 +621,7 @@ class PyDocsParser(Docs):
                                     'file_id': file_id, 
                                     'line_no': ln_no,
                                     'module': module,
-                                    'object': obj, 
+                                    'object': obj.strip(), 
                                     'alias': alias
                                     }
                                 )   
@@ -626,8 +645,9 @@ class PyDocsParser(Docs):
             while doc_list[-1].strip() == '':
                 doc_list.pop(-1)
 
-        self.file_docs.append({
-            'file_id': file_id,
-            'docs': '\n'.join(doc_list)
-        })
+        if len(doc_list) > 0:
+            self.file_docs.append({
+                'file_id': file_id,
+                'docs': '\n'.join(doc_list)
+            })
 
