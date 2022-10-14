@@ -266,7 +266,7 @@ class Log():
             log_lines = log.get('log','').split('\n')
             for line in log_lines:
                 if line != '': 
-                    print(f"{log.get('timestamp')}\t{log.get('name')}\t{log.get('module')}\t{line}")
+                    print(f"{log.get('timestamp')}  {log.get('name'): <8}{log.get('module'): <20}\t{line}")
  
     def __log_file_write(self, log: dict): 
         ''' Writes the log to flat file 
