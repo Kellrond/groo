@@ -1,24 +1,21 @@
 # Local
 import config
 from database import Db
-from modules import documentation 
-from modules.documentation import export_docs, py_parser
 
+from modules import camera
+
+camera.runCameraTest()
+
+# # Generate the documentation. 
+# from modules import documentation 
+# from modules.documentation import export_docs, py_parser
 # documentation.generateDocumentation()
 # export_docs.toTxt(config.modules.Documentation.export_file_path)
-
-documentation.generateDocumentation()
-parser = py_parser.PyParser()
-db = Db()
-export_docs.toTxt(config.modules.Documentation.export_file_path)
-parser.debug_file_lines(start_pos=600,file='./modules/documentation/py_parser.py')
+# db = Db()
 # export_docs.toDb(db)
+# # Help with debugging
+# parser = py_parser.PyParser()
+# parser.debug_file_lines(start_pos=600,file='./modules/documentation/py_parser.py')
 
-
-# [ print(x) for x in parser.todo]
-
-# # print(parser.file_docs[0])
-# # print()
-# print(parser.imports)
 
 

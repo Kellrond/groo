@@ -66,7 +66,7 @@ echo "intall: packages"
 
 apt-get -qq update > /dev/null
 apt-get -qq upgrade > /dev/null
-apt-get -qq -y install apache2 expect git postgresql python3-dev python3-venv ufw > /dev/null
+apt-get -qq -y install apache2 expect ffmpeg git libxext6 libsm6 postgresql python3-dev python3-venv ufw > /dev/null
 
 if [ $desktopInstall = TRUE ] 
 then
