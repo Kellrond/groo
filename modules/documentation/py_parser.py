@@ -63,6 +63,8 @@ class PyParser(Docs):
             for line in file.get('lines'):
                 flags = line.get('flags')
 
+                if file.get('file_path') == './modules/documentation/py_parser.py':
+                    print(line)
                 # Can either be a class or a function not both
                 if 'cls' in flags:
                     py_class_lines.append(line)
@@ -99,8 +101,12 @@ class PyParser(Docs):
                 class_list.append(class_lines)
                 class_lines = []
 
+        # Catch the classes that run up to the end of the file and the class end flag gets removed
+        if len(class_lines) > 0:
+            class_list.append(class_lines) 
+
         # Loop through each class individually
-        for class_lines in class_list:
+        for class_ln in class_list:
             cls = {
                 'file_id': file_id,
                 'class_id': next(class_id_gen),
@@ -108,13 +114,13 @@ class PyParser(Docs):
                 'superclass': [],
                 'docstring': [],
                 'parameters': [],
-                'line_start': class_lines[0].get('line_no'),
-                'line_count': len(class_lines)
+                'line_start': class_ln[0].get('line_no'),
+                'line_count': len(class_ln)
             }
 
             method_list = []
 
-            for ln_dict in class_lines:
+            for ln_dict in class_ln:
                 flags = ln_dict.get('flags')
                 txt   = ln_dict.get('line')
                 # Parameters
@@ -122,7 +128,7 @@ class PyParser(Docs):
                     params_str = txt[txt.find('(')+1:]
                     if params_str.find(')') > -1:
                         params_str = params_str[:params_str.find(')')]
-                        cls['parameters'] = [ x.strip() for x in params_str.split(',')]
+                        cls['parameters'] = [ x.strip() for x in params_str.split(',') if x.strip() != 'self']
                 # Methods
                 if 'meth' in flags or 'decorated' in flags:
                     method_list.append(ln_dict)

@@ -11,7 +11,8 @@ documentation.generateDocumentation()
 parser = py_parser.PyParser()
 db = Db()
 export_docs.toTxt(config.modules.Documentation.export_file_path)
-export_docs.toDb(db)
+parser.debug_file_lines(start_pos=600,file='./modules/documentation/py_parser.py')
+# export_docs.toDb(db)
 
 
 # [ print(x) for x in parser.todo]

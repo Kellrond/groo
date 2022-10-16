@@ -1,4 +1,4 @@
-█▀▀ █▀█ █▀█ █ █ █                                                    Oct 13 2022
+█▀▀ █▀█ █▀█ █ █ █                                                    Oct 15 2022
 █▄█ █▀▄ █▄█ ▀▄▀▄▀                                      Source code documentation
 --------------------------------------------------------------------------------
 
@@ -53,7 +53,6 @@ File and folder structure
    ./test/test_data/
    ./test/test_data/documentation/
       - ./test/test_data/documentation/demo.py
-      - ./test/test_data/documentation/source_code_docs.txt
    ./test/test_data/logs/
    ./test/unit_tests/
       - ./test/unit_tests/__init__.py
@@ -249,7 +248,7 @@ import traceback
 #  Classes
 ################################################################################
 
-Db(self)
+Db()
 
    Database class that handles connection to the database. Much of this is
    a wrapper around psycopg2 so some methods are just mirroring 
@@ -486,7 +485,7 @@ from modules import logging
 #  Classes
 ################################################################################
 
-Docs(self)
+Docs()
 
    Superclass for other documentation classes. Primarily builds and maintains a file list 
    which is shared by the classes. 
@@ -517,7 +516,7 @@ Docs(self)
       Reads the lines of the files generated in self.generateFilePaths    
 
 
-   debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
+   debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='./test/test_data/documentation/demo.py'):
       Used to debug / view the output of the function
       
       Params:
@@ -562,7 +561,7 @@ from modules import logging
 #  Classes
 ################################################################################
 
-PyMeta(self)
+PyMeta()
    Superclass: Docs
 
    Adds Python meta flags to Docs class variable file_lines     
@@ -603,6 +602,95 @@ from modules.documentation import Docs
 from modules import logging
 from modules import utilities
 
+################################################################################
+#  Classes
+################################################################################
+
+PyParser()
+   Superclass: Docs
+
+   This class parses the flags which were set by the other documentation classes.
+   
+   The class variables are the final output of the parser
+       - classes
+       - functions
+       - file_docs
+       - imports
+       - todo
+   
+   Others are listed under the Docs class, which is available here as well due to the superclass.
+       - folder_list
+       - file_lines
+
+
+
+   __init__(self) -> None:
+
+
+   from_test_conf(cls, config):
+      Loads a test configuration file and returns an instance of the class    
+
+
+   parsePython(self):
+      Takes the flagged lines and converts them into objects   
+
+
+   __parse_classes(self, file:dict, lines:list):
+      Extract the class docs data like parameters, returns, docstring, methods, and nested methods.
+      This is fed individual files at a time. 
+      
+      Params: 
+          - file: i in Doc.file_lines[i] has meta data we want to add to records
+          - lines: a filtered list of lines containing relevant flags
+
+
+   __parse_methods(self, file:dict, class_id:int, method_lists:list):
+      Splits out the logic for methods from classes.  
+      
+      Params: 
+          - file: the file parameter from the function that called this
+          - class_id: the parent function_id to be placed in the nested function object
+          - method_lists: a filtered list of lines containing relevant flags
+
+
+   __nested_methods(self, file:dict, func_id:int, class_id:int, nested_functions:list):
+      Splits out the logic for nested functions.  
+      
+      Params: 
+          - file: the file parameter from the function that called this
+          - func_id: the parent function_id to be placed in the nested function object
+          - class_id: the class this nested function is related to
+          - nested_functions: a filtered list of lines containing relevant flags
+
+
+   __parse_functions(self, file:dict, lines:list):
+      Extract the function docs data like parameters, returns, docstring, nested functions.
+      This is fed individual files. 
+      
+      Params: 
+          - file: i in Doc.file_lines[i] has meta data we want to add to records
+          - lines: a filtered list of lines containing relevant flags
+
+
+   __nested_functions(self, file:dict, func_id:int, nested_functions:list):
+      Splits out the logic for nested functions.  
+      
+      Params: 
+          - file: the file parameter from the function that called this
+          - func_id: the parent function_id to be placed in the nested function object
+          - nested_functions: a filtered list of lines containing relevant flags
+
+
+   __parse_meta(self, file:dict, lines:list):
+      Extract the meta data like file comments, imports and todo comment  s 
+      
+      Params: 
+          - file: i in Doc.file_lines[i] has meta data we want to add to records
+          - lines: a filtered list of lines containing relevant flags
+
+
+
+
 
 --------------------------------------------------------------------------------
       ./modules/documentation/py_classes.py
@@ -619,7 +707,7 @@ from modules import logging
 #  Classes
 ################################################################################
 
-PyClasses(self)
+PyClasses()
    Superclass: Docs
 
    Inserts class related parsing flags into the file_lines class variable   
@@ -677,7 +765,7 @@ from modules.logging import Log
 #  Classes
 ################################################################################
 
-PyFunctions(self)
+PyFunctions()
    Superclass: Docs
 
    Inserts function related parsing flags into the file_lines class variable   
@@ -739,6 +827,157 @@ from time import perf_counter
 import psycopg2
 import config
 from modules import utilities
+
+################################################################################
+#  Classes
+################################################################################
+
+Log(src_name: str)
+
+   Handles logging throughout the app. There are 6 levels of logging currently
+   
+       - 0: Fatal
+       - 1: Error
+       - 2: Warn
+       - 3: Info
+       - 4: Debug
+       - 5: Verbose
+   
+   There is a database connection in the dbLog method. This is here because the database will
+   create logs when writing and depending on configuration it would be possible to end up in 
+   an endless loop. Python will throw a maximum recursion error before you fill up the storage
+   so it's not going to destroy your machine, but should be left. 
+   
+   Usage: 
+       `log = logging.Log(__name__)`
+
+
+
+   __init__(self, src_name: str) -> None:
+
+
+   from_test_conf(cls, config, db_config, src_name:str):
+      Instantiates a class using the test configuration passed in. Normal or test instances
+      of Log will check for their files at instantiation. 
+      
+      
+      Params: 
+          - config: a config file loaded from the test/config dir or otherwise
+          - db_config: since the logger writes to the db and the db logs, it's better to pass
+            in a connection config
+          - src_name: __name__. Use that every time. 
+
+
+   fatal(self, txt: str) -> None:
+      Log level: 0 - FATAL
+      
+      This log level is for fatal errors which cause the application to crash or would have
+      if they were not in a try: block
+
+
+   error(self, txt: str) -> None:
+      Log level: 1 - ERROR 
+      
+      Use error for significant but recoverable errors
+
+
+   warn(self, txt: str) -> None:
+      Log level: 2 - WARN
+      
+      Something seems off or some configuration is unsafe
+
+
+   info(self, txt: str) -> None:
+      Log level: 3 - INFO
+      
+      Things you just might want to know
+
+
+   debug(self, txt: str) -> None:
+      Log level: 4 - DEBUG
+      
+      This should be for development level message. Try not to make it too verbose, 
+      there's a level for that.
+
+
+   verbose(self, txt: str) -> None:
+      Log level: 5 - VERBOSE
+      
+      Warning: Very noisy
+      
+      When you absolutely must know everything that's going on. 
+
+
+   performance(self, func):
+      This function is a decorator. At some point it might be worth splitting it into it's own class 
+      that way we can include logger performance. 
+      
+      Usage:
+          `@log.performance`
+
+      performance_wrapper(*args, **kwargs):
+         Performance testing is an expensive operation and can slow the operation of the system.
+         However the knowledge you can gleam from this is worth the expense. But it doesn't need
+         to run all the time.  
+
+
+   init_logs(self) -> None:
+      Ensure that the required folders and files are in place to start logging    
+
+
+   delete_dot_logs(self) -> None:
+      Remove all .log files created    
+
+
+   __return_log_dict(self, level:int, log_txt:str) -> dict:
+      The function helps to reduce error by producing log dictionaries 
+      
+      Params: 
+          - level: gives the level and text name to the log
+          - log_txt: the message to be logged
+
+
+   __check_for_log_folder(self) -> bool:
+      Before we can have a log file there must be a log folder    
+
+
+   __check_for_log_files(self) -> bool:
+      If the log file does not exist, it will may throw and error when accessed.    
+
+
+   __log_console_write(self, log: dict):
+      Outputs the log information to terminal. 
+      
+      Params:
+          - log: a dictionary created from the methods above
+
+
+   __log_file_write(self, log: dict):
+      Writes the log to flat file 
+      
+      Params:
+          - log: a dictionary created from the methods above
+
+
+   __log_db_write(self, log: dict):
+      Writes the log to the database. This has a basic pattern to create the db connection and
+      should be left this way. The database creates logs and can end up in a recursive loop.
+      
+      Params:
+          - log: a dictionary created from the methods above
+
+
+   __perf_db_write(self, log:dict):
+      Write the performance data to database. The database connection is created on the spot
+      
+      Params:
+          - log: a dictionary created from the methods above
+
+
+   __perf_file_write(self, log:dict):
+
+
+
 
 
 ################################################################################
@@ -834,7 +1073,7 @@ import chunk
 #  Classes
 ################################################################################
 
-Class1(self, param1:str, param2:dict, param3:False)
+Class1(param1:str, param2:dict, param3:False)
 
    This is an example superclass
    
@@ -902,7 +1141,7 @@ Class1(self, param1:str, param2:dict, param3:False)
 
 
 
-Class2(self, param1: str, param2: dict, param3: False, param4=False)
+Class2(param1: str, param2: dict, param3: False, param4=False)
    Superclass: Class1
 
    This is an example class with a super class    
@@ -926,7 +1165,7 @@ Class2(self, param1: str, param2: dict, param3: False, param4=False)
 
 
 
-Class3(self, param1:str, param2:dict, param3:False)
+Class3(param1:str, param2:dict, param3:False)
    Superclass: Class1, Class1
 
    __init__(self, param1:str, param2:dict, param3:False) -> None:
@@ -967,11 +1206,6 @@ Class3(self, param1:str, param2:dict, param3:False)
    decoratedAndMultiLine(param1, param2:str, param3={}) -> str:
       Example multi line docstring with the preferred formatting style
           This is the second line 
-
-
---------------------------------------------------------------------------------
-      ./test/test_data/documentation/source_code_docs.txt
---------------------------------------------------------------------------------
 
 
 ################################################################################
@@ -1073,6 +1307,43 @@ from unittest.mock import patch
 import modules.logging as logging
 import database
 from test import t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestLogging()
+   Superclass: unittest.TestCase
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+
+
+   fileLineCount(self, file_name:str) -> int:
+      Counts the number of lines in a log returns the number 
+      
+      Param:
+          - file_name: `grow.log` for example. No '/'
+
+
+   test_create_log_files(self):
+
+
+   test_delete_logs(self):
+
+
+   test_logging(self):
+
+
+   test_performance_testing(self):
+      This is a busier test. Might be worth splitting up if it gets added to more    
+
+      time_tester():
+
+
+
 
 
 --------------------------------------------------------------------------------
@@ -1343,5 +1614,41 @@ import unittest
 from modules.documentation import py_meta
 from modules import logging
 from test import t_config
+
+################################################################################
+#  Classes
+################################################################################
+
+TestDocsPyHeader()
+   Superclass: unittest.TestCase
+
+   Test the Python documentation 
+   
+   The following can be handy to debug and test this
+   `self.classDoc.debug_file_lines('class start', 58, 134)`
+
+
+
+   setUpClass(cls):
+
+
+   tearDownClass(cls):
+      file_lines is a class variable and we don't want to pollute tests after they have run    
+
+
+   find_flags(self, flag:str) -> int:
+      Looks for a parsing flag    
+
+
+   test_file_comments(self):
+
+
+   test_file_imports(self):
+
+
+   test_file_todos(self):
+
+
+
 
 

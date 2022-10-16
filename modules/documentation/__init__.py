@@ -142,7 +142,7 @@ class Docs:
                 Docs.file_lines.append(temp_dict)
 
     @log.performance
-    def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='test/test_data/documentation/demo.py'):
+    def debug_file_lines(self, find_filter=None, start_pos=0, end_pos=None, file='./test/test_data/documentation/demo.py'):
         ''' Used to debug / view the output of the function
 
             Params:
@@ -155,7 +155,7 @@ class Docs:
         if type(find_filter) == str:
             find_filter = [find_filter]
 
-        # This bit is for printing the result of this function   
+        # This bit is for printing the result of this function  
         for file in [ f for f in self.file_lines if f.get('file_path') == file ]:
             line_no = []
             whitespace = []
@@ -176,12 +176,12 @@ class Docs:
 
             max_len_flags = max([len(x) for x in flags])
 
-        print(file.get('file_path'))
-        print('No. Wspc. Flags')
-        if end_pos == None:
-            end_pos = len(line_no)
-        for i in range(start_pos, end_pos):
-            print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
+            print(file.get('file_path'))
+            print('No. Wspc. Flags')
+            if end_pos == None:
+                end_pos = len(line_no)
+            for i in range(start_pos, end_pos):
+                print(f'''{line_no[i].ljust(4)}  {whitespace[i].rjust(2)} {flags[i].ljust(max_len_flags)}:{lines[i]}''')
 
     @log.performance
     def isFileOfExtension(self, file_path:str, ext:str) -> bool:

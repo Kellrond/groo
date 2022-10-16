@@ -100,6 +100,8 @@ def toTxt(write_path):
                 code += ["################################################################################"]
                 code += ['']
             for cls in file_classes:
+                if not cls.get('name'):
+                    continue
                 code += [f"{cls.get('name')}({', '.join(cls.get('parameters'))})"]
                 if cls.get('superclass') != []:
                     code += [f"{ indent }Superclass: {', '.join(cls.get('superclass'))}"]     

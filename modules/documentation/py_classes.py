@@ -79,7 +79,7 @@ class PyClasses(Docs):
             if in_class:
                 file['lines'][prev_line_w_text]['flags'].append('cls end')
                 clear_flags = ['cls']
-                for i in range(prev_line_w_text, line.get('line_no')):
+                for i in range(prev_line_w_text + 1, line.get('line_no') + 1):
                     file['lines'][i]['flags'] = [ x for x in file['lines'][i]['flags'] if x not in clear_flags ]   
 
 
@@ -96,7 +96,7 @@ class PyClasses(Docs):
 
             for line in file.get('lines'):
                 if line_after_class_def == True:
-                    # docsings can start with either ''' or """. Find returns -1 if not in string 
+                    # docstrings can start with either ''' or """. Find returns -1 if not in string 
                     # So check both and if max > -1 then we found one  
                     docs_start_pos = max([ line.get('line').find("'''"), line.get('line').find('"""') ])
                     if docs_start_pos > -1:
