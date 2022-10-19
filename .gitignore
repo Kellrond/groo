@@ -10,3 +10,4 @@ styling/dart-sass/*
 *.pyc
 /*.pyc
 *.jpg
+data/images/*
